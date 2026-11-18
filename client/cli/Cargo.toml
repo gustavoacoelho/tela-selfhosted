@@ -1,0 +1,17 @@
+[package]
+name = "tela-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Ferramenta de diagnóstico do motor de captura do tela'"
+
+[[bin]]
+name = "tela"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+tela-capture = { path = "../capture" }
+clap = { version = "4.6.6", features = ["derive"] }
+# Runtime só para o caminho WHIP; os subcomandos de diagnóstico seguem síncronos.
+tokio.workspace = true

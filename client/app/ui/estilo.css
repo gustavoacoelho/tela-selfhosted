@@ -1,0 +1,394 @@
+/* ============================================================
+   tela' — app de transmissão
+   Mesmas regras de DESIGN SYSTEM.md que a sala web: obsidiana,
+   0px de raio SEMPRE, nenhuma divisória de 1px (separação por
+   camada de cor), glow lavanda. Os tokens são copiados de
+   sala/web/index.html de propósito — os dois têm de parecer o
+   mesmo produto, e divergir aqui seria o app parecer um clone.
+   ============================================================ */
+
+:root{
+  --surface:            #131313;
+  --surface-low:        #1c1b1b;
+  --surface-high:       #2a2a2a;
+  --surface-bright:     #383838;
+  --surface-lowest:     #0d0d0d;
+
+  --primary:            #c3c0ff;
+  --primary-container:  #9d9bff;
+  --on-primary:         #1a1a2e;
+  --secondary:          #46eaed;
+  --tertiary:           #ffb77d;
+
+  --on-surface:         #e8e6e6;
+  --on-surface-variant: #9a9797;
+
+  --glow: 0 0 60px rgba(195,192,255,.06);
+
+  --display: 'Space Grotesk', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --body: 'Inter', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; border-radius:0 !important; }
+
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--surface);
+  color:var(--on-surface);
+  font-family:var(--body);
+  font-size:13px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  /* Painel, não documento: nada aqui é para selecionar ou arrastar. */
+  user-select:none;
+  cursor:default;
+}
+
+/* Textura de blueprint, igual à da sala: quase imperceptível, dá chão. */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    linear-gradient(rgba(195,192,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(195,192,255,.028) 1px, transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 120% 80% at 50% 0%, #000 30%, transparent 78%);
+}
+
+button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+input,select{ font:inherit; user-select:text; }
+
+/* ---------- estrutura das telas ---------- */
+
+.tela{
+  display:none;
+  position:fixed; inset:0; z-index:1;
+  grid-template-rows:auto 1fr auto;
+}
+.tela.on{ display:grid; }
+/* Telas sem topo próprio ainda precisam das três faixas. */
+#t-entrar{ grid-template-rows:1fr auto; }
+
+.rolo{ overflow-y:auto; min-height:0; }
+.pad{ padding:26px 24px 18px; }
+
+/* ---------- marca e texto ---------- */
+
+.brand{
+  font-family:var(--display); font-weight:700;
+  font-size:64px; line-height:.86; letter-spacing:-.045em;
+  margin:14px 0 10px;
+}
+.brand i{ font-style:normal; color:var(--primary); }
+
+.sub{ color:var(--on-surface-variant); margin:0 0 26px; font-size:13px; }
+.sub strong{ color:var(--on-surface); font-weight:600; }
+.sub.pequena{ margin:18px 0 10px; font-size:12px; }
+
+.rot{
+  display:block;
+  font-size:9px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant);
+}
+
+/* ---------- campos ---------- */
+
+.field{ margin-bottom:16px; }
+.field label{
+  display:block; font-size:9px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant); margin-bottom:6px;
+}
+.field input, .field select{
+  width:100%; padding:11px 13px;
+  background:var(--surface-lowest);
+  color:var(--on-surface);
+  border:0; outline:0;
+  border-bottom:2px solid transparent;
+  caret-color:var(--primary);
+  transition:border-color .18s, background .18s;
+}
+.field input:focus, .field select:focus{ border-bottom-color:var(--primary); background:#0a0a0a; }
+.field input::placeholder{ color:#5c5959; }
+.mini-field{ margin-bottom:0; }
+
+/* ---------- botões ---------- */
+
+.btn{
+  display:inline-block; padding:13px 26px;
+  font-weight:600; letter-spacing:.02em;
+  background:linear-gradient(135deg,var(--primary),var(--primary-container));
+  color:var(--on-primary);
+  transition:filter .18s, transform .12s;
+}
+.btn:hover:not(:disabled){ filter:brightness(1.08); }
+.btn:active:not(:disabled){ transform:translateY(1px); }
+.btn:disabled{ opacity:.35; cursor:not-allowed; }
+.btn.largo, .btn-ghost.largo{ width:100%; }
+
+/* Parar é destrutivo no sentido de irreversível para quem está assistindo:
+   laranja, que o design system reserva para "ação requerida". */
+.btn--parar{ background:linear-gradient(135deg,var(--tertiary),#e89a58); }
+
+.btn-ghost{
+  background:var(--surface-high); color:var(--on-surface-variant);
+  padding:11px 18px; font-weight:500;
+  transition:background .18s, color .18s;
+}
+.btn-ghost:hover{ background:var(--surface-bright); color:var(--on-surface); }
+.btn-ghost.mini{ padding:5px 10px; font-size:11px; }
+
+/* ---------- tags ---------- */
+
+.tag{
+  display:inline-block;
+  font-size:10px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase;
+  padding:3px 7px;
+  background:var(--surface-bright);
+  color:var(--on-surface-variant);
+  white-space:nowrap;
+}
+.tag--live{ background:rgba(195,192,255,.16); color:var(--primary); }
+.tag--warn{ background:rgba(255,183,125,.16); color:var(--tertiary); }
+
+/* ---------- topo e barra ---------- */
+
+.topo{
+  display:flex; align-items:center; gap:8px;
+  padding:12px 16px;
+  background:var(--surface-low);
+}
+.topo .mark{
+  font-family:var(--display); font-weight:700; font-size:17px; letter-spacing:-.03em;
+}
+.topo .mark i{ font-style:normal; color:var(--primary); }
+.cresce{ flex:1; }
+
+.barra{ padding:14px 16px; background:var(--surface-low); }
+
+.rodape-nota{
+  padding:12px 24px 14px;
+  background:var(--surface-low);
+  color:var(--on-surface-variant);
+  font-size:11px;
+}
+.nota-linha{ margin:2px 0; word-break:break-all; }
+.nota-linha:empty{ display:none; }
+.nota-linha.aviso{ color:var(--tertiary); word-break:normal; }
+
+/* ---------- seções ---------- */
+
+.secao{ padding:16px 16px 18px; }
+.secao + .secao{ background:var(--surface-low); }
+.titulo-secao{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  font-size:9px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant);
+  margin:0 0 10px;
+}
+
+/* ---------- abas e lista de fontes ---------- */
+
+.abas{ display:flex; margin-bottom:2px; }
+.aba{
+  flex:1; padding:8px 10px; font-size:11px; font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase;
+  background:var(--surface-high); color:var(--on-surface-variant);
+}
+.aba.on{ background:var(--primary); color:var(--on-primary); }
+
+.lista{
+  max-height:168px; overflow-y:auto;
+  background:var(--surface-lowest);
+}
+.item{
+  display:flex; align-items:baseline; gap:8px;
+  width:100%; text-align:left;
+  padding:9px 12px;
+  transition:background .12s;
+}
+.item:hover{ background:var(--surface-high); }
+.item.on{ background:rgba(195,192,255,.14); box-shadow:var(--glow); }
+.item .nome{
+  flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:var(--on-surface);
+}
+.item.on .nome{ color:var(--primary); font-weight:600; }
+.item .meta{ font-size:10px; color:var(--on-surface-variant); white-space:nowrap; }
+.lista-vazia{ padding:16px 12px; color:var(--on-surface-variant); font-size:12px; }
+
+/* ---------- bloco de áudio ---------- */
+
+.audio{ background:var(--surface-lowest); padding:13px 14px; }
+.audio-alvo{
+  font-family:var(--display); font-weight:700;
+  font-size:17px; letter-spacing:-.02em;
+  color:var(--on-surface-variant);
+  word-break:break-word;
+}
+.audio.definido .audio-alvo{ color:var(--primary); }
+.audio.sistema .audio-alvo{ color:var(--tertiary); }
+.audio-explica{ color:var(--on-surface-variant); font-size:11.5px; margin-top:5px; }
+/* Opção dentro do bloco de áudio, e não uma caixa solta: a decisão é sobre o
+   áudio, então mora onde o áudio é explicado. Segue os mesmos tokens do bloco
+   — nada de raio, marcador desenhado à mão. */
+.audio-opcao{
+  display:flex; align-items:center; gap:8px;
+  margin-top:10px; cursor:pointer;
+  font-size:11.5px; color:var(--on-surface-variant);
+}
+.audio-opcao[hidden]{ display:none; }
+.audio-opcao input{
+  appearance:none; -webkit-appearance:none;
+  width:14px; height:14px; flex:none; cursor:pointer;
+  background:var(--surface);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+}
+.audio-opcao input:checked{ background:var(--primary); box-shadow:none; }
+.audio-opcao:hover{ color:var(--on-surface); }
+
+/* Caixa de "lembrar" na tela de entrada. */
+.caixa{ display:flex; align-items:center; gap:8px; margin:-4px 0 16px; cursor:pointer; font-size:12px; color:var(--on-surface-variant); }
+.caixa input{ appearance:none; -webkit-appearance:none; width:14px; height:14px; flex:none; background:var(--surface-lowest); box-shadow:inset 0 0 0 1px rgba(255,255,255,.14); cursor:pointer; }
+.caixa input:checked{ background:var(--primary); box-shadow:none; }
+.caixa:hover span{ color:var(--on-surface); }
+
+.audio-aviso{ color:var(--tertiary); font-size:11.5px; margin-top:7px; }
+.audio-aviso:empty{ display:none; }
+
+/* ---------- presets ---------- */
+
+.presets{ display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+.preset{
+  display:flex; flex-direction:column; gap:2px;
+  padding:9px 11px; text-align:left;
+  background:var(--surface-high); color:var(--on-surface-variant);
+  transition:background .15s, color .15s;
+}
+.preset:hover{ background:var(--surface-bright); }
+.preset.on{ background:var(--primary); color:var(--on-primary); }
+.preset-nome{ font-weight:600; font-size:12.5px; }
+.preset-spec{ font-size:10px; letter-spacing:.04em; opacity:.85; }
+
+.manual{ display:none; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px; }
+.manual.on{ display:grid; }
+
+/* ---------- erros ---------- */
+
+.erro{
+  color:var(--tertiary); font-size:12px;
+  padding:0 16px; margin:10px 0 0; min-height:18px;
+}
+#erro-entrar{ padding:0; margin-top:12px; }
+
+/* ---------- em transmissão ---------- */
+
+.ar-fonte{ background:var(--surface-low); padding:13px 14px; margin-bottom:2px; }
+.ar-titulo{
+  font-family:var(--display); font-weight:700; font-size:19px;
+  letter-spacing:-.02em; margin-top:4px;
+  word-break:break-word;
+}
+.ar-audio{ color:var(--on-surface-variant); font-size:11.5px; margin-top:4px; }
+
+.metricas{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; }
+.metrica{ background:var(--surface-low); padding:11px 12px; }
+.metrica b{
+  display:block;
+  font-family:var(--display); font-weight:700; font-size:22px;
+  letter-spacing:-.03em; line-height:1.15; margin-top:3px;
+  color:var(--primary);
+}
+.metrica b.alerta{ color:var(--tertiary); }
+.metrica .uni{ font-size:10px; color:var(--on-surface-variant); letter-spacing:.06em; }
+
+.ar-estado{
+  margin-top:2px; padding:9px 12px;
+  background:var(--surface-low);
+  color:var(--on-surface-variant);
+  font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+}
+.ar-estado.ok{ color:var(--secondary); }
+.ar-estado.ruim{ color:var(--tertiary); }
+
+
+/* O caminho do log e clicavel: copiar o caminho e o primeiro passo de pedir
+   ajuda, e ninguem deveria precisar cacar a pasta. */
+#nota-log{ cursor:pointer; }
+#nota-log:hover{ color:var(--primary); }
+
+/* Aviso de perda no caminho. Fica vazio quase sempre; some quando não há o que
+   dizer, em vez de ocupar espaço com "0%". */
+.ar-perda{ color:var(--tertiary); font-size:11.5px; padding:0 14px 11px; }
+.ar-perda:empty{ display:none; }
+
+/* Barra da tela "no ar": duas ações lado a lado. Trocar de fonte é frequente,
+   parar é raro — por isso trocar vem antes e discreto, e parar continua com o
+   peso visual de ação final. */
+.barra--ar{ display:flex; gap:8px; }
+.barra--ar .btn-ghost{ flex:0 0 auto; }
+.barra--ar .btn--parar{ flex:1; }
+
+/* O atributo `hidden` só esconde porque a folha do navegador diz
+   `[hidden]{display:none}` — e isso empata em especificidade com qualquer
+   `display` nosso numa classe, que ganha por vir depois. Sem reafirmar aqui,
+   todo `elemento.hidden = true` neste app é silenciosamente ignorado: foi
+   assim que a faixa de atualização ficou visível (e vazia) para sempre. */
+[hidden]{ display:none !important; }
+
+/* ---- popup de atualização ---------------------------------------------- */
+/* Sobreposto, não no fluxo: a tela de transmitir cabe inteira sem rolagem, e
+   uma faixa no topo empurrava tudo para baixo só para dar um recado. */
+.modal{
+  position:fixed; inset:0; z-index:30;
+  display:none; align-items:center; justify-content:center;
+  padding:20px;
+  background:rgba(8,8,8,.72);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+}
+.modal.on{ display:flex; }
+.modal-caixa{
+  background:rgba(42,42,42,.82);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 0 60px rgba(195,192,255,.06);
+  max-width:400px; width:100%; padding:26px;
+}
+.modal-caixa h3{
+  font-family:var(--display); font-weight:700; font-size:20px;
+  letter-spacing:-.025em; margin:0 0 8px;
+}
+.modal-caixa p{ color:var(--on-surface-variant); font-size:12.5px; margin:0 0 16px; }
+.modal-caixa p:empty{ display:none; }
+.modal-acoes{ display:flex; gap:8px; align-items:center; }
+.modal-acoes .btn, .modal-acoes .btn-ghost{ flex:1; padding:10px 14px; font-size:12px; }
+.nota{ color:var(--tertiary); }
+/* Nome próprio: `.barra` já é a barra de ações do rodapé, e herdar o
+   `padding` dela transformava esta linha de 4px numa faixa de 28px vazia. */
+.progresso{
+  margin:0 0 16px; height:4px; border-radius:2px;
+  background:var(--surface-high); overflow:hidden;
+}
+.progresso > i{
+  display:block; height:100%; width:0;
+  background:var(--primary); transition:width .2s linear;
+}
+
+/* Dica dos atalhos, embaixo da lista de fontes. */
+.dica{
+  margin:10px 0 0; font-size:11px; line-height:1.5;
+  color:var(--on-surface-variant);
+}
+.dica:empty{ display:none; }
+.dica b{ color:var(--primary); font-weight:600; }
+
+/* Aviso de codificação por software. Cor de atenção, não de erro: a
+   transmissão está funcionando — só está custando CPU. */
+.aviso-cpu{
+  margin-top:8px; padding:8px 10px;
+  font-size:11.5px; line-height:1.5;
+  color:var(--tertiary);
+  background:rgba(255,183,125,.10);
+  border-left:2px solid var(--tertiary);
+}

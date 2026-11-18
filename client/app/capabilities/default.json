@@ -1,0 +1,13 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissões da janela do app. Sem isto o `listen` do núcleo é negado e nenhum evento do Rust chega à interface — todas as métricas ficam em '—' enquanto a transmissão funciona normalmente, porque os comandos próprios não passam por esta checagem.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:event:allow-emit"
+  ]
+}

@@ -1,0 +1,37 @@
+logLevel: info
+
+api: yes
+apiAddress: :9997
+
+# Autorização delegada ao serviço `sala`: 200 libera, 401 nega.
+authMethod: http
+authHTTPAddress: http://sala:8090/internal/auth
+authHTTPExclude:
+  - action: api
+  - action: metrics
+
+webrtc: yes
+webrtcAddress: :8889
+# Porta única de mídia. Precisa estar aberta no iptables E na Security List
+# da subnet 10.0.1.0/24 no console OCI. Ver §5.4 da spec.
+webrtcLocalUDPAddress: :8189
+# Quanto o servidor espera pela primeira midia depois de a conexao WebRTC
+# estabelecer. O padrao (2s) e curto demais para o nosso caso: o app sobe o WHIP
+# ANTES do ffmpeg (para os sockets ja estarem prontos quando o primeiro pacote
+# sair), entao a partida do encoder acontece dentro dessa janela. Numa maquina
+# sem encoder por hardware, ou com disco lento, o ffmpeg nao produz a tempo e a
+# sessao morre com "deadline exceeded while waiting tracks" -- foi exatamente o
+# que aconteceu com um amigo cuja conexao ICE/DTLS tinha funcionado.
+webrtcTrackGatherTimeout: 15s
+webrtcIPsFromInterfaces: no
+webrtcAdditionalHosts:
+  - 203.0.113.10   # o IP público do seu servidor
+
+# Nada além de WebRTC.
+rtsp: no
+rtmp: no
+hls: no
+srt: no
+
+paths:
+  all_others:

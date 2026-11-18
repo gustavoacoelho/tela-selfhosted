@@ -1,0 +1,9 @@
+# Onde estão as bibliotecas de desenvolvimento do ffmpeg e o libclang que o
+# bindgen do `ffmpeg-sys-next` exige. Ambos vêm de download e não são
+# versionados; `scripts/preparar-ffmpeg.ps1` os coloca aqui.
+#
+# `relative = true` resolve a partir da pasta que contém `.cargo`, então isto
+# funciona em qualquer máquina sem editar nada.
+[env]
+FFMPEG_DIR = { value = "vendor/ffmpeg", relative = true }
+LIBCLANG_PATH = { value = "vendor/libclang", relative = true }

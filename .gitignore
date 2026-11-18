@@ -1,0 +1,47 @@
+# --- Segredos ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- Spike (Rust) ---
+spike/bin/
+spike/target/
+spike/out.*
+
+# --- client (Rust) ---
+client/target/
+# Bibliotecas de desenvolvimento do ffmpeg + libclang: ~230 MB, vêm de
+# download. Reproduzir com `client/scripts/preparar-ffmpeg.ps1`.
+client/vendor/
+client/**/out.pcm
+client/**/out.wav
+
+# --- sala (Go) ---
+sala/sala
+sala/tela-sala
+sala/tela-sala.exe
+sala/sala.exe
+
+# --- Sistema ---
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Binarios de ferramenta baixados (ffmpeg, mediamtx)
+client/bin/
+client/target/
+client/*.mkv
+client/*.pcm
+
+# Config portátil gerada pelo app ao lado do executável
+tela-config.json
+
+# Gerado pelo tauri-build a cada compilacao
+client/app/gen/
+client/*.log
+client/*.png
+client/*.mkv
+.previa/

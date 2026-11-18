@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = ["capture", "cli", "app"]
+
+[workspace.package]
+version = "0.7.11"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+anyhow = "1.0.104"
+# Versões fixadas com `=`: a API da `webrtc` muda entre minors, e a linha 0.20+
+# é uma reescrita sans-io com API incompatível. 0.17.2 é a última da API
+# clássica (APIBuilder / TrackLocalStaticRTP / write_rtp), que é a que
+# `capture/src/whip.rs` usa. Subir de versão aqui é uma mudança de código.
+webrtc = "=0.17.2"
+tokio = { version = "=1.53.1", features = ["rt-multi-thread", "net", "time", "sync", "macros"] }
+# `native-tls` (SChannel no Windows) em vez do rustls padrão: o rustls do
+# reqwest 0.13 puxa aws-lc-rs, que exige NASM/CMake para compilar no MSVC.
+# TLS comum via SChannel funciona bem — o que falhava no ffmpeg era DTLS-SRTP,
+# problema que nem existe aqui porque o DTLS é feito em Rust puro pela `webrtc`.
+reqwest = { version = "=0.13.4", default-features = false, features = ["blocking", "native-tls", "charset", "http2", "json", "stream"] }
+
+[profile.release]
+opt-level = 3

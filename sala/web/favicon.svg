@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>tela'</title>
+  <!--
+    O apóstrofo de `tela'`, que já era o ícone da bandeja do app. Reaproveitado
+    em vez de desenhado de novo: a geometria foi extraída de
+    `client/app/icons/bandeja.png` para o site e o app terem a MESMA marca.
+
+    O fundo escuro é sólido de propósito. Só o traço lavanda, sobre
+    transparente, sumiria na barra de abas de quem usa tema claro — que é
+    exatamente onde um favicon precisa funcionar.
+
+    Sem raio de canto: o DESIGN SYSTEM diz 0px sempre, e a aba é onde a marca
+    aparece menor e mais vezes.
+  -->
+  <rect width="32" height="32" fill="#131313"/>
+  <path d="M14 6 H20 L14 20 H11 Z" fill="#c3c0ff"/>
+</svg>

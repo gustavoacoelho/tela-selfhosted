@@ -1,0 +1,84 @@
+[package]
+name = "tela-capture"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Motor de captura de tela e áudio do tela' (Windows)"
+
+[lib]
+name = "tela_capture"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow.workspace = true
+windows-capture = "2.0.1"
+wasapi = "0.24.0"
+# `Bytes` é o tipo que o empacotador RTP do `webrtc` recebe; a versão tem de
+# ser a mesma que ele usa, senão são dois tipos distintos para o compilador.
+bytes = "1.12"
+# Só o módulo `whip` usa estas três; captura de vídeo e áudio segue síncrona.
+webrtc.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+
+# Mesma versão que `windows-capture` e `wasapi` usam (0.62): tipos como HANDLE
+# atravessam a fronteira entre as crates, e duas cópias do `windows` no grafo
+# viram dois tipos incompatíveis.
+[dependencies.windows]
+version = "0.62.2"
+features = [
+  "Win32_Foundation",
+  # CreateNamedPipeW exige Win32_Security (SECURITY_ATTRIBUTES) e
+  # Win32_Storage_FileSystem (FILE_FLAGS_AND_ATTRIBUTES); ConnectNamedPipe
+  # exige Win32_System_IO (OVERLAPPED), mesmo passando None nos dois.
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+  "Win32_System_Pipes",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_Graphics_Dwm",
+  # IDXGIOutput6::GetDesc1, para saber se o monitor esta em HDR.
+  "Win32_Graphics_Dxgi",
+  # QueryDisplayConfig + DISPLAYCONFIG_SDR_WHITE_LEVEL, para saber o quanto
+  # o Windows escurece conteudo SDR quando o HDR esta ligado.
+  "Win32_Devices_Display",
+  "Win32_Graphics_Dxgi_Common",
+  # MonitorFromPoint, para descobrir o monitor sob o ponteiro no atalho global.
+  "Win32_Graphics_Gdi",
+  "Win32_UI_WindowsAndMessaging",
+  # timeBeginPeriod/timeEndPeriod, para o sono de 16,67 ms valer 16,67 ms.
+  "Win32_Media",
+  # SetThreadPriority na thread que dita o ritmo dos quadros.
+  "Win32_System_Threading",
+  # O encoder recebe a textura da captura e fala D3D11 direto com o ffmpeg.
+  "Win32_Graphics_Direct3D",
+  "Win32_Graphics_Direct3D11",
+  # LoadLibraryW, para trazer as DLLs do ffmpeg do cache antes da primeira
+  # chamada — ver `encoder::disponivel`.
+  "Win32_System_LibraryLoader",
+]
+
+[build-dependencies]
+# Gera os TIPOS da libavcodec. Não linka nada: as funções são resolvidas em
+# tempo de execução — ver `build.rs` e `src/libav.rs`.
+bindgen = { version = "0.72", optional = true }
+
+[features]
+# Encode em processo, recebendo a textura D3D11 da captura direto no encoder,
+# sem readback para a CPU.
+#
+# # Por que fica atrás de feature
+#
+# Linkar a libavcodec faz o Windows resolver as DLLs no INÍCIO do processo. O
+# `ffmpeg.exe` de hoje é baixado sob demanda para um cache, e as DLLs seguiriam
+# o mesmo caminho — só que aí o `tela.exe` não abriria enquanto o download não
+# tivesse acontecido. Enquanto isso não estiver resolvido (delay-load), a build
+# que vai para as pessoas não linka nada e continua exatamente como está.
+#
+# Exige as bibliotecas de desenvolvimento em `vendor/`; ver
+# `scripts/preparar-ffmpeg.ps1`.
+encoder-d3d11 = ["dep:bindgen"]
+
+[[bench]]
+name = "conversao"
+harness = false

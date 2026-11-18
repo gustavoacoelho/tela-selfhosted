@@ -1,0 +1,2084 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>tela'</title>
+<!-- Caminhos ABSOLUTOS. Esta mesma pagina e servida em /c/<codigo> para os
+     convidados; com caminho relativo o navegador pediria /c/favicon.svg e a
+     aba do convidado ficaria sem icone — justamente a de quem nunca viu a
+     marca antes. -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#131313">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   tela' — sala
+   Segue DESIGN SYSTEM.md: obsidiana, 0px de raio SEMPRE, nenhuma
+   divisória de 1px (separação por camada de cor), glow lavanda.
+   ============================================================ */
+
+:root{
+  --surface:            #131313;
+  --surface-low:        #1c1b1b;
+  --surface-high:       #2a2a2a;
+  --surface-bright:     #383838;
+  --surface-lowest:     #0d0d0d;
+
+  --primary:            #c3c0ff;
+  --primary-container:  #9d9bff;
+  --on-primary:         #1a1a2e;
+  --secondary:          #46eaed;
+  --tertiary:           #ffb77d;
+
+  --on-surface:         #e8e6e6;
+  --on-surface-variant: #9a9797;
+  --outline-variant:    #464552;
+
+  --glow: 0 0 60px rgba(195,192,255,.06);
+
+  --display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+*,*::before,*::after{ box-sizing:border-box; border-radius:0 !important; }
+
+html,body{ height:100%; }
+body{
+  margin:0;
+  background:var(--surface);
+  color:var(--on-surface);
+  font-family:var(--body);
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+}
+
+/* Textura de blueprint: quase imperceptível, dá chão sem virar enfeite. */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    linear-gradient(rgba(195,192,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(195,192,255,.028) 1px, transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 120% 80% at 50% 0%, #000 30%, transparent 78%);
+}
+
+button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; }
+input{ font:inherit; }
+
+.tag{
+  display:inline-block;
+  font-family:var(--body);
+  font-size:10px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase;
+  padding:3px 7px;
+  background:var(--surface-bright);
+  color:var(--on-surface-variant);
+  white-space:nowrap;
+}
+.tag--live{ background:rgba(195,192,255,.16); color:var(--primary); }
+.tag--warn{ background:rgba(255,183,125,.16); color:var(--tertiary); }
+
+/* ---------- ENTRADA ---------- */
+
+#gate{
+  position:fixed; inset:0; z-index:20;
+  display:grid; grid-template-columns:1fr; align-content:center;
+  padding:0 clamp(24px,9vw,140px);
+  background:var(--surface);
+}
+#gate.hidden{ display:none; }
+
+.brand{
+  font-family:var(--display); font-weight:700;
+  font-size:clamp(56px,11vw,132px);
+  line-height:.88; letter-spacing:-.045em;
+  margin:0 0 6px;
+}
+.brand i{ font-style:normal; color:var(--primary); }
+
+.gate-sub{
+  color:var(--on-surface-variant);
+  max-width:46ch; margin:0 0 44px;
+  font-size:15px;
+}
+
+.field{ margin-bottom:18px; max-width:400px; }
+.field label{
+  display:block; font-size:10px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant); margin-bottom:7px;
+}
+.field input{
+  width:100%; padding:13px 15px;
+  background:var(--surface-lowest);
+  color:var(--on-surface);
+  border:0; outline:0;
+  border-bottom:2px solid transparent;
+  caret-color:var(--primary);
+  transition:border-color .18s, background .18s;
+}
+.field input:focus{ border-bottom-color:var(--primary); background:#0a0a0a; }
+.field input::placeholder{ color:#5c5959; }
+
+/* `hidden` tem de ganhar de qualquer classe.
+   A folha do navegador traz `[hidden]{display:none}`, mas estilo de autor
+   sobrepoe estilo do navegador — e `.btn` define `display:inline-block`. Sem
+   esta regra, esconder o botao de baixar do convidado simplesmente nao
+   funcionaria, e a restricao viraria so a do servidor (401 sem explicacao). */
+[hidden]{ display:none !important; }
+
+.btn{
+  display:inline-block; padding:13px 30px;
+  font-weight:600; letter-spacing:.02em;
+  background:linear-gradient(135deg,var(--primary),var(--primary-container));
+  color:var(--on-primary);
+  transition:filter .18s, transform .18s;
+}
+.btn:hover{ filter:brightness(1.08); }
+.btn:active{ transform:translateY(1px); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+.btn--baixar{ padding:8px 16px; font-size:12px; letter-spacing:.05em; }
+.btn--baixar[data-indisponivel]{
+  background:var(--surface-high); color:var(--on-surface-variant);
+  cursor:default; filter:none;
+}
+
+.btn--ghost{
+  background:none; color:var(--on-surface-variant);
+  box-shadow:inset 0 0 0 1px rgba(70,69,82,.35);
+  padding:10px 18px; font-weight:500;
+}
+.btn--ghost:hover{ color:var(--on-surface); box-shadow:inset 0 0 0 1px rgba(70,69,82,.7); }
+
+/* Caixa de "lembrar": desenhada na mão porque o checkbox padrão do navegador
+   é arredondado e o design system proíbe raio em qualquer elemento. */
+.caixa{ display:flex; align-items:center; gap:9px; margin:2px 0 22px; cursor:pointer;
+        font-size:13px; color:var(--on-surface-variant); max-width:400px; }
+.caixa input{ appearance:none; -webkit-appearance:none; width:15px; height:15px; flex:none;
+              background:var(--surface-lowest); box-shadow:inset 0 0 0 1px rgba(70,69,82,.55); cursor:pointer; }
+.caixa input:checked{ background:var(--primary); box-shadow:none; }
+.caixa:hover span{ color:var(--on-surface); }
+
+#gate-erro{ color:var(--tertiary); font-size:13px; margin-top:14px; min-height:20px; }
+
+/* ---------- SALA ---------- */
+
+#sala{ display:none; grid-template-rows:auto 1fr; height:100%; position:relative; z-index:1; }
+#sala.on{ display:grid; }
+
+/* Barra única e enxuta de propósito: cada pixel dela sai do vídeo, e numa sala
+   com três transmissões o vídeo é a única coisa que alguém veio ver. Os botões
+   daqui são clicados uma vez por sessão, então pagam por espaço, não o vídeo. */
+.topo{
+  display:flex; align-items:center; gap:10px;
+  padding:4px 12px;
+  background:var(--surface-low);
+}
+.topo .mark{
+  font-family:var(--display); font-weight:700; font-size:17px; letter-spacing:-.03em;
+}
+.topo .btn--baixar{ padding:5px 12px; font-size:11px; }
+.topo .btn--ghost{ padding:5px 12px; font-size:12px; }
+
+.topo .mark i{ font-style:normal; color:var(--primary); }
+.topo .sep{ flex:1; }
+
+.corpo{ display:grid; grid-template-columns:196px 1fr; min-height:0; }
+
+/* --- coluna de pessoas --- */
+/* Coluna em pilha: a lista de gente cresce e rola, o alternador fica colado no
+   pé. Sem isto o alternador subiria junto com a lista e mudaria de lugar
+   conforme entra e sai gente da sala. */
+.lateral{
+  background:var(--surface-low); padding:20px 0; min-height:0;
+  display:flex; flex-direction:column;
+}
+.lateral #lista{ flex:1; overflow-y:auto; min-height:0; }
+.lateral .alternador{ align-self:center; margin-top:16px; flex:none; }
+.lateral .alternador button{ padding:6px 14px; font-size:11px; }
+.lateral h2{
+  font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--on-surface-variant); margin:0 0 12px; padding:0 22px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+/* `wrap` + piso de largura no nome.
+   A coluna tem 196px e cabiam nome e uma tag. Quando entrou a segunda —
+   "travando" —, ela empurrou o nome até zero: sobrava a marca de aviso sem
+   dizer de QUEM, que é a única coisa que ela precisa dizer. Com o piso, quem
+   cede é a linha: as tags descem, o nome fica. */
+.pessoa{
+  display:flex; align-items:center; flex-wrap:wrap; gap:6px 10px;
+  padding:9px 22px;
+  transition:background .15s;
+}
+.pessoa:hover{ background:var(--surface-high); }
+.pessoa .ponto{ width:7px; height:7px; flex:none; background:#4a4747; }
+.pessoa.transmitindo .ponto{ background:var(--primary); box-shadow:0 0 10px var(--primary); }
+.pessoa.assistindo .ponto{ background:var(--secondary); }
+/* Base ZERO, não `auto`: a quebra de linha do flex é decidida pelo tamanho
+   natural dos itens, antes de encolher qualquer um. Com base automática, um
+   nome comprido já empurrava a tag para a linha de baixo mesmo havendo espaço
+   de sobra depois de encurtá-lo. Com base zero o nome cresce para ocupar o que
+   sobrar, e só quando nem o piso de 8 caracteres cabe é que a linha quebra. */
+.pessoa .nome{ flex:1 1 0; min-width:8ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pessoa .tag{ flex:none; }
+.pessoa.eu .nome::after{ content:' · você'; color:var(--on-surface-variant); font-size:12px; }
+
+/* --- palco --- */
+/* Pilha: o painel de vazio e a faixa de ocultas ocupam o que precisam, a grade
+   fica com o RESTO. Antes a grade tinha `height:100%` e não sabia que havia
+   algo acima dela — bastava ocultar uma transmissão para a faixa de chips
+   aparecer e empurrar a grade inteira para fora do palco por baixo. */
+.palco{
+  padding:12px; overflow:hidden; min-height:0;
+  display:flex; flex-direction:column;
+}
+
+.grade{
+  display:grid; gap:12px;
+  /* Colunas, linhas e o tamanho de cada card vêm todos do JS (`arrumaGrade`),
+     que escolhe o arranjo que dá a MAIOR área de vídeo para o espaço
+     disponível. Um `auto-fit` com largura mínima fixa ignora a altura da
+     janela: com três transmissões numa tela larga ele punha as três lado a
+     lado, pequenas, e deixava metade da tela vazia embaixo.
+
+     Centralizado porque o card sai com o tamanho EXATO do vídeo: a sobra fica
+     de fora, no fundo da página, em vez de virar tarja preta dentro de cada
+     transmissão. */
+  justify-content:center; align-content:center;
+  /* `flex:1` e não `height:100%`: quem reparte a altura é o palco, que sabe o
+     que mais está nele. */
+  flex:1; min-height:0;
+}
+/* No bento cada card tem largura e altura próprias, em pixels, vindas do JS.
+   Sem centralizar, um card mais baixo que a linha encostaria no topo dela e o
+   conjunto ficaria torto. */
+.grade.bento{ place-items:center; }
+/* A tela grande do bento tem espaço de sobra: o corte do título da fonte em
+   card estreito vale só para as pequenas, que são as apertadas. */
+.grade.bento.estreito > .tile:first-child .fonte{ display:block; }
+
+/* Foco: a escolhida grande à esquerda, as outras empilhadas à direita — todas
+   continuam tocando. `place-items:center` porque os cards têm tamanho próprio,
+   em pixels, vindo do JS. */
+.grade.foco{ place-items:center; }
+/* A tela grande do foco tem espaço de sobra; o corte de título vale só para as
+   miniaturas do carrossel. */
+.grade.foco.estreito > .tile.ativo .fonte{ display:block; }
+/* No carrossel os controles atrapalham mais do que ajudam: são miniaturas de
+   ~54px de altura e o clique nelas serve para trocar o foco, não para mexer no
+   volume. O volume continua na grade. */
+.grade.foco .tile:not(.ativo) .controles{ display:none; }
+.grade.foco .tile:not(.ativo){ cursor:pointer; }
+/* Na miniatura sobra o nome e mais nada: "ao vivo", taxa e fps somam ~180px de
+   tag num card de 225px, e transbordariam. Quem quer o número clica e vira a
+   principal. */
+.grade.foco .tile:not(.ativo) .tag{ display:none; }
+
+.tile{
+  background:var(--surface-low); transition:box-shadow .25s;
+  display:flex; flex-direction:column; min-height:0; overflow:hidden;
+}
+.tile.ativo{ box-shadow:var(--glow); }
+.tile video{
+  display:block; width:100%; flex:1; min-height:0; background:#000;
+  object-fit:contain; cursor:pointer;
+}
+
+/* Faixa de informação e controles, LOGO ABAIXO do vídeo — não sobre ele.
+   Já esteve por cima, com degradê, e o problema apareceu quando o card passou
+   a ter o tamanho exato da imagem: a faixa deixou de cobrir tarja preta e
+   passou a cobrir jogo, e o degradê ainda apagava o que estava embaixo. Aqui
+   ela custa uns 30px de altura e não esconde um pixel da transmissão. */
+.abaixo{
+  display:flex; align-items:center; gap:8px;
+  padding:0 10px;
+  /* Altura FIXA de propósito. `arrumaGrade` desconta este valor para achar o
+     tamanho do vídeo; se a faixa encolhesse ao esconder o slider em card
+     estreito, a conta mudaria depois de já ter sido feita e a grade poderia
+     ficar oscilando entre dois arranjos a cada `resize`. */
+  height:32px; flex:none;
+  background:var(--surface-low);
+  min-width:0; position:relative;
+}
+.abaixo input[type=range]{ height:14px; width:64px; }
+.tile .rodape{ display:flex; align-items:center; gap:8px; min-width:0; flex:1; }
+
+/* --- controles por transmissão ---
+   Sobre a faixa e não ao lado dela. Lado a lado, os quatro controles comiam a
+   largura e espremiam "ao vivo", taxa e fps até virarem lascas ilegíveis num
+   card de 444px — medido. Sobrepostos, a informação fica inteira enquanto
+   ninguém está mexendo, e os controles cobrem só a faixa (nunca a imagem)
+   quando o mouse chega. */
+.controles{
+  position:absolute; inset:0 0 0 auto;
+  display:flex; align-items:center; gap:8px;
+  padding:0 10px 0 22px;
+  background:linear-gradient(to left, var(--surface-low) 84%, transparent);
+  opacity:0; pointer-events:none;
+  transition:opacity .14s;
+}
+/* `focus-within` junto com `hover`: quem navega por teclado precisa ver o
+   controle que acabou de focar. */
+.tile:hover .controles,
+.tile:focus-within .controles{ opacity:1; pointer-events:auto; }
+.controles .sep{ display:none; }
+
+/* As tags nunca encolhem — encolhidas não se leem, e são exatamente o que a
+   faixa existe para mostrar. Quem cede espaço é o título da fonte. */
+.abaixo .tag{ flex:none; }
+
+/* Card estreito (muita gente transmitindo ao mesmo tempo): sai o título da
+   fonte. O nome de quem transmite e o estado ficam — são o que alguém precisa
+   para saber de quem é cada tela. A classe vem do JS, que sabe a largura
+   exata do card. */
+.grade.estreito .fonte{ display:none; }
+/* "ao vivo" é a primeira a sair quando o espaço aperta: tudo na grade está ao
+   vivo, então ela é a única tag que não informa nada. As outras quatro — taxa,
+   fps, resolução e perdidos — todas dizem algo que muda. */
+.grade.estreito .tag--live{ display:none; }
+
+/* E saem dois controles, medidos: com todos abertos eles somam ~460px, e num
+   card de 345px o excedente é cortado pelo `overflow:hidden` do tile — os
+   controles da esquerda simplesmente somem, sem aviso. O que sai é escolhido
+   por ter substituto: o slider de volume tem o botão de mudo ao lado, e "tela
+   cheia" tem o clique duplo no vídeo.
+
+   `:not(.foco)` porque em foco o `estreito` é decidido pela largura das
+   MINIATURAS, e aplicá-lo à grade inteira levava junto a tela grande — que
+   tem 1433px e espaço de sobra. As miniaturas do foco já escondem os
+   controles por completo (regra logo acima), então aqui não há o que cortar. */
+.grade.estreito:not(.foco) .controles .vol,
+.grade.estreito:not(.foco) .controles .ico--cheia{ display:none; }
+
+.ico{
+  padding:5px 9px; font-size:12px; font-weight:600;
+  letter-spacing:.05em; text-transform:uppercase;
+  background:var(--surface-high); color:var(--on-surface-variant);
+  transition:background .15s, color .15s;
+}
+.ico:hover{ background:var(--surface-bright); color:var(--on-surface); }
+.ico.mudo{ background:rgba(255,183,125,.16); color:var(--tertiary); }
+
+/* Slider sem nenhum canto redondo: o design system proíbe raio em qualquer
+   elemento, e o padrão do navegador é uma pílula. Precisa ser reconstruído. */
+input[type=range]{
+  -webkit-appearance:none; appearance:none;
+  width:104px; height:16px; background:transparent; cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:4px; background:var(--surface-bright);
+}
+input[type=range]::-moz-range-track{ height:4px; background:var(--surface-bright); }
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:5px; height:16px; margin-top:-6px; background:var(--primary);
+}
+input[type=range]::-moz-range-thumb{
+  width:5px; height:16px; border:0; background:var(--primary);
+}
+input[type=range]:disabled::-webkit-slider-thumb{ background:#4a4747; }
+input[type=range]:disabled::-moz-range-thumb{ background:#4a4747; }
+
+/* ---------- TELA CHEIA ----------
+   Aqui a faixa volta a flutuar SOBRE a imagem, com degradê, aparecendo só no
+   hover — que é como era antes de descer para baixo do vídeo.
+
+   A troca é de propósito e o motivo é o oposto do que valia na grade. Lá o
+   card tem o tamanho exato do vídeo, então uma faixa por cima cobre jogo e
+   uma faixa embaixo não custa nada além de 32px de página. Em tela cheia não
+   existe "página em volta": aqueles 32px sairiam da imagem, e quem pediu tela
+   cheia pediu imagem. Sobreposta e escondida, o vídeo fica inteiro e o nome
+   continua a um movimento de mouse de distância. */
+.tile:fullscreen{
+  display:flex; flex-direction:column; position:relative; background:#000;
+  /* `!important` porque `arrumaGrade` escreve largura e altura em pixels no
+     próprio elemento, e estilo inline ganha de folha de estilo. Sem isto o
+     card ficaria do tamanho da célula da grade, no meio de uma tela preta. */
+  width:100% !important; height:100% !important;
+}
+.tile:fullscreen video{ flex:1; min-height:0; }
+
+.tile:fullscreen .abaixo{
+  position:absolute; inset:auto 0 0 0;
+  height:auto; padding:0;
+  flex-direction:column; align-items:stretch;
+  background:linear-gradient(to top, rgba(8,8,8,.92), rgba(8,8,8,.55) 62%, transparent);
+  opacity:0; pointer-events:none;
+  transition:opacity .2s;
+}
+/* Controles da tela cheia: uma classe que o JavaScript liga e desliga.
+   Antes era `:hover` + `:focus-within`, e no celular os dois GRUDAM. O toque
+   simula hover e só o solta quando se toca em OUTRO elemento — e em tela
+   cheia o card e a tela inteira, nao ha outro elemento. E o botao "tela cheia"
+   tocado continua focado, dentro do card. Resultado: a barra nunca sumia.
+   `:has(:focus-visible)` fica para quem navega pelo teclado: foco por toque ou
+   clique nao conta como visivel, entao nao traz o problema de volta. */
+.tile:fullscreen.mostrando .abaixo,
+.tile:fullscreen:has(:focus-visible) .abaixo{ opacity:1; pointer-events:auto; }
+/* O ponteiro some junto com a barra, como em qualquer player. */
+.tile:fullscreen:not(.mostrando){ cursor:none; }
+.tile:fullscreen .rodape{ padding:14px 18px 6px; }
+/* Os controles voltam para o fluxo: a camada inteira já é escondida por hover,
+   então sobrepô-los de novo dentro dela só esconderia o nome sem necessidade. */
+.tile:fullscreen .controles{
+  position:static; display:flex; opacity:1; pointer-events:auto;
+  background:none; padding:0 18px 14px;
+}
+/* Nada de corte por card estreito aqui: a tela inteira é o card. Precisa vencer
+   `.grade.estreito ...`, daí a classe a mais na frente. */
+.grade .tile:fullscreen .fonte{ display:block; }
+.grade .tile:fullscreen .controles .vol,
+.grade .tile:fullscreen .controles .ico--cheia,
+.grade .tile:fullscreen .tag{ display:inline-block; }
+
+/* --- faixa de ocultas --- */
+
+.ocultas{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.ocultas:empty{ display:none; }
+.oculta{
+  display:flex; align-items:center; gap:9px;
+  padding:8px 13px; background:var(--surface-low);
+  color:var(--on-surface-variant); font-size:13px;
+}
+.oculta strong{ color:var(--on-surface); font-weight:600; }
+.oculta .ico{ padding:4px 8px; }
+.tile .quem{ font-weight:600; white-space:nowrap; flex:none; }
+.tile .fonte{ color:var(--on-surface-variant); font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; }
+/* Discreta de propósito: é diagnóstico, não informação de quem só quer assistir. */
+.tile .versao{ opacity:.65; font-variant-numeric:tabular-nums; }
+.tag--convidado{ background:var(--surface-3, #2a2a32); opacity:.8; }
+.convites{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex;
+  align-items:center; justify-content:center; z-index:10050; padding:16px; }
+.convites[hidden]{ display:none; }
+.convites__caixa{ background:var(--surface, #16161c); border-radius:12px; padding:20px;
+  width:min(520px, 100%); max-height:85vh; overflow:auto; }
+.convites__nota{ color:var(--on-surface-variant); font-size:13px; margin:0 0 12px; }
+.convite{ display:flex; align-items:center; gap:8px; padding:8px 0;
+  border-top:1px solid rgba(255,255,255,.08); }
+.convite__rotulo{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.convite__link{ font-size:12px; opacity:.7; word-break:break-all; }
+#convite-erro{ color:var(--erro, #ff6b6b); font-size:13px; min-height:1em; }
+.convites__titulo2{ margin:22px 0 4px; }
+.bloqueio__ip{ font-size:12px; opacity:.7; font-variant-numeric:tabular-nums; }
+/* Empurra o estado para a borda direita. Fica com largura zero quando a fonte
+   já ocupou a sobra, e é o que segura o alinhamento quando não há título. */
+.tile .sep-rod{ flex:1; min-width:0; }
+
+.vazio{ padding:64px 4px; max-width:52ch; }
+.vazio h3{
+  font-family:var(--display); font-weight:700;
+  font-size:clamp(26px,3.6vw,40px); line-height:1.06; letter-spacing:-.03em;
+  margin:0 0 14px;
+}
+.vazio p{ color:var(--on-surface-variant); margin:0 0 10px; }
+
+.alternador{ display:flex; flex:none; }
+.alternador button{
+  padding:8px 16px; font-size:12px; font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase;
+  background:var(--surface-high); color:var(--on-surface-variant);
+}
+.alternador button.on{ background:var(--primary); color:var(--on-primary); }
+
+/* ---------- MODAL ---------- */
+.modal{
+  position:fixed; inset:0; z-index:30;
+  display:none; align-items:center; justify-content:center;
+  padding:24px;
+  background:rgba(8,8,8,.72);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+}
+.modal.on{ display:flex; }
+.modal-caixa{
+  background:rgba(42,42,42,.78);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  box-shadow:0 0 60px rgba(195,192,255,.06);
+  max-width:560px; width:100%; padding:34px;
+}
+.modal-caixa h3{
+  font-family:var(--display); font-weight:700; font-size:27px;
+  letter-spacing:-.025em; margin:0 0 8px;
+}
+.modal-caixa p{ color:var(--on-surface-variant); margin:0 0 18px; }
+.passos{ margin:0 0 24px; padding:0; list-style:none; counter-reset:p; }
+.passos li{
+  counter-increment:p; position:relative;
+  padding:11px 0 11px 40px;
+  background:linear-gradient(90deg, rgba(195,192,255,.05), transparent 60%);
+  margin-bottom:3px;
+}
+.passos li::before{
+  content:counter(p,decimal-leading-zero);
+  position:absolute; left:13px; top:11px;
+  font-family:var(--display); font-weight:700; font-size:12px;
+  color:var(--primary);
+}
+.modal-acoes{ display:flex; gap:10px; align-items:center; }
+.nota{ color:var(--tertiary) !important; font-size:13px; }
+.btn[data-indisponivel]{
+  background:var(--surface-high); color:var(--on-surface-variant);
+  cursor:default; filter:none; text-decoration:none;
+}
+
+@media (max-width:720px){
+  .corpo{ grid-template-columns:1fr; }
+  .lateral{ display:none; }
+  .palco{ padding:14px; }
+  .grade{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ENTRADA -->
+<section id="gate">
+  <h1 class="brand">tela<i>'</i></h1>
+  <p class="gate-sub">
+    Compartilhamento de tela do grupo. Para assistir, é só entrar — nada para instalar.
+  </p>
+
+  <form id="form-entrar" autocomplete="off">
+    <div class="field">
+      <label for="in-nick">Seu apelido</label>
+      <input id="in-nick" maxlength="24" placeholder="como o pessoal te chama" required>
+    </div>
+    <div class="field">
+      <label for="in-senha">Senha da sala</label>
+      <input id="in-senha" type="password" placeholder="a que circulou no Discord" required>
+    </div>
+    <label class="caixa">
+      <input type="checkbox" id="in-lembrar">
+      <span>Lembrar neste navegador</span>
+    </label>
+    <button class="btn" type="submit" id="btn-entrar">Entrar na sala</button>
+    <div id="gate-erro" role="alert"></div>
+  </form>
+</section>
+
+<!-- SALA -->
+<div id="sala">
+  <!-- Barra única. O rodapé foi removido: sobravam nele só "Grade" e "Foco",
+       que cabem aqui, e cada faixa a menos vira altura de vídeo. -->
+  <header class="topo">
+    <span class="mark">tela<i>'</i></span>
+    <span class="sep"></span>
+    <span class="tag" id="tag-ping">— ms</span>
+    <button class="btn btn--baixar" id="btn-baixar-topo">Baixar app</button>
+    <button class="btn--ghost" id="btn-convidar" hidden>Convidar</button>
+    <button class="btn--ghost" id="btn-sair">Sair</button>
+  </header>
+
+  <!-- Painel de convites. So o admin ve; o servidor recusa o comando de quem
+       nao for, entao esconder aqui e conveniencia, nao seguranca. -->
+  <div id="convites" class="convites" hidden>
+    <div class="convites__caixa">
+      <h3>Convidar alguem</h3>
+      <p class="convites__nota">O convidado assiste pelo navegador. Nao baixa o app e nao transmite.</p>
+      <form id="form-convite">
+        <div class="field">
+          <label for="in-rotulo">Para lembrar quem e</label>
+          <input id="in-rotulo" maxlength="40" placeholder="pessoal do trabalho" required>
+        </div>
+        <div class="field">
+          <label for="in-prazo">Vale por</label>
+          <select id="in-prazo">
+            <option value="1h">1 hora</option>
+            <option value="6h" selected>6 horas</option>
+            <option value="24h">24 horas</option>
+          </select>
+        </div>
+        <button class="btn" type="submit">Gerar link</button>
+        <div id="convite-erro" role="alert"></div>
+      </form>
+      <div id="convites-lista"></div>
+
+      <h3 class="convites__titulo2">Bloqueados</h3>
+      <p class="convites__nota">Quem errou a senha vezes demais fica barrado por
+        15 minutos. Desbloquear evita ter que reiniciar a sala — que derrubaria
+        as transmissoes de todo mundo para destravar uma pessoa.</p>
+      <div id="bloqueios-lista"></div>
+
+      <button class="btn--ghost" id="btn-fechar-convites">Fechar</button>
+    </div>
+  </div>
+
+  <div class="corpo">
+    <aside class="lateral">
+      <h2><span>Na sala</span><span class="tag" id="tag-total">0</span></h2>
+      <div id="lista"></div>
+      <div class="alternador">
+        <button id="bt-grade" class="on">Grade</button>
+        <button id="bt-foco">Foco</button>
+      </div>
+    </aside>
+
+    <main class="palco">
+      <div class="vazio" id="vazio">
+        <h3>Ninguém está compartilhando ainda.</h3>
+        <p>Quando alguém começar, a tela aparece aqui automaticamente — sem recarregar a página.</p>
+        <p>Quer ser você? Precisa do app do Windows: só ele consegue enviar o áudio de um aplicativo específico, sem vazar o resto do sistema.</p>
+        <button class="btn" id="btn-como-transmitir">Compartilhar minha tela</button>
+      </div>
+      <div class="ocultas" id="ocultas"></div>
+      <div class="grade" id="grade"></div>
+    </main>
+  </div>
+
+</div>
+
+<!-- MODAL: como compartilhar -->
+<div class="modal" id="modal">
+  <div class="modal-caixa">
+    <h3>Compartilhar exige o app</h3>
+    <p>Assistir funciona em qualquer navegador. Transmitir não: mandar o áudio de <em>um aplicativo só</em> — o jogo, sem o Discord junto — é coisa que navegador nenhum faz.</p>
+    <ol class="passos">
+      <li>Baixe o <strong>tela.exe</strong> e deixe onde quiser. Não instala nada.</li>
+      <li>O Windows vai avisar que não conhece o programa. Em <em>Mais informações</em> → <em>Executar assim mesmo</em>.</li>
+      <li>Entre com a mesma senha e apelido. <strong>Na primeira vez</strong> ele baixa sozinho o codificador de vídeo (uns 140 MB) — depois disso abre na hora.</li>
+      <li>Escolha o monitor ou a janela e transmita.</li>
+    </ol>
+    <p id="nota-app" class="nota"></p>
+    <div class="modal-acoes">
+      <a class="btn" id="link-baixar" href="#" download>Baixar o app</a>
+      <button class="btn--ghost" id="btn-fechar-modal">Deixa pra depois</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+// Demo quando não há servidor por trás: abrindo o arquivo direto (file:, data:,
+// blob:) não existe WebSocket para falar, e tentar conectar só daria erro feio.
+// O `?demo` força mesmo servido por HTTP, para revisar o visual.
+const DEMO = new URLSearchParams(location.search).has('demo')
+          || !/^https?:$/.test(location.protocol);
+
+/* Codigo do convite, quando a pessoa chega por /c/<codigo>.
+   O servidor serve a MESMA pagina nesse caminho; quem le o codigo e o
+   JavaScript. Uma pagina so em vez de duas, e o convidado ve exatamente a sala
+   que os outros veem.
+   O padrao casa com o alfabeto e o tamanho que o servidor gera; qualquer outra
+   coisa e ignorada, para uma URL torta virar a tela de senha normal em vez de
+   um pedido malformado. */
+const CONVITE = (location.pathname.match(/^\/c\/([a-z0-9]{20})$/) || [])[1] || '';
+
+const $ = s => document.querySelector(s);
+
+/* Credencial lembrada.
+   `localStorage` e não cookie: cookie viaja em TODA requisição ao servidor, o
+   que exporia a senha à rede sem necessidade nenhuma. Aqui ela nunca sai do
+   navegador — o servidor já a recebe pelo WebSocket de qualquer forma.
+   Não há como cifrar de verdade no navegador (a chave moraria ao lado do
+   dado), então isto é opt-in: quem marca a caixa aceita que qualquer pessoa
+   com acesso a este perfil do navegador leia a senha. */
+const LEMBRAR = 'tela.credencial';
+function guardaCredencial(nick, senha){
+  try { localStorage.setItem(LEMBRAR, JSON.stringify({nick, senha})); } catch {}
+}
+function esqueceCredencial(){
+  try { localStorage.removeItem(LEMBRAR); } catch {}
+}
+function credencialSalva(){
+  try { return JSON.parse(localStorage.getItem(LEMBRAR) || 'null'); } catch { return null; }
+}
+/* "casa", "admin" ou "convidado" — vem do servidor no `state`.
+   A interface usa isto so para MOSTRAR ou ESCONDER coisas. Toda restricao de
+   verdade e conferida no servidor: esconder botao nao e restringir. */
+let meuPapel = '';
+
+const gate = $('#gate'), sala = $('#sala'), lista = $('#lista'),
+      grade = $('#grade'), vazio = $('#vazio'), modal = $('#modal');
+
+let ws = null, token = null, meuId = null;
+let assistindo = new Map();   // streamId -> RTCPeerConnection
+// Exposto para diagnóstico pelo console. Sem isto, investigar "por que a
+// imagem não aparece" exige adivinhar de fora — foi o que custou uma tarde.
+window.__assistindo = assistindo;
+let focado = null;
+let ocultos = new Set();      // streamIds com a imagem escondida
+let ultimoEstado = null;      // para redesenhar sem esperar o próximo `state`
+
+/* ---------------- entrada ---------------- */
+
+$('#form-entrar').addEventListener('submit', e => {
+  e.preventDefault();
+  const nick = $('#in-nick').value.trim();
+  const senha = $('#in-senha').value;
+  if (!nick) return;
+  $('#gate-erro').textContent = '';
+  $('#btn-entrar').disabled = true;
+  // Guarda só depois de a sala aceitar — ver `welcome` no onmessage. Guardar
+  // agora deixaria credencial errada salva quando a senha estivesse errada.
+  // Convidado nao guarda credencial: o link e temporario, e deixá-lo salvo
+  // devolveria a pessoa a uma tela de erro depois que ele vencesse.
+  const lembrar = !CONVITE && $('#in-lembrar').checked;
+  pendente = lembrar ? {nick, senha} : null;
+  if (!lembrar) esqueceCredencial();
+
+  DEMO ? entraDemo(nick) : conecta(nick, senha);
+});
+
+let pendente = null;
+
+// Pré-preenche a partir do que ficou guardado.
+(() => {
+  const c = credencialSalva();
+  if (!c) return;
+  $('#in-nick').value = c.nick || '';
+  $('#in-senha').value = c.senha || '';
+  $('#in-lembrar').checked = true;
+})();
+
+/* Chegou por convite: some o campo de senha.
+   O convite JA e a credencial. Deixar o campo ali pediria à pessoa um segredo
+   que ela nao tem e que ela nao deveria ter — que e o ponto de existir convite.
+   `required` sai junto, senao o formulário nao envia. */
+if (CONVITE) {
+  const campo = $('#in-senha').closest('.field');
+  if (campo) campo.remove();
+  $('#in-senha').removeAttribute('required');
+  $('#in-senha').value = '';
+  const caixa = document.querySelector('.caixa');
+  if (caixa) caixa.remove();
+  const titulo = document.querySelector('#gate h1');
+  if (titulo) titulo.textContent = 'Você foi convidado';
+  const sub = document.querySelector('#gate p');
+  if (sub) sub.textContent = 'Escolha um apelido e entre. Seu acesso é temporário e só para assistir.';
+  $('#btn-entrar').textContent = 'Entrar como convidado';
+}
+
+function abreSala(){ gate.classList.add('hidden'); sala.classList.add('on'); }
+
+function erroEntrada(msg){
+  $('#gate-erro').textContent = msg;
+  $('#btn-entrar').disabled = false;
+}
+
+/* ---------------- websocket ---------------- */
+
+/* ---------------- medida de latência ----------------
+ *
+ * O número que a sala mostrava era ida e volta pelo WebSocket, e quem responde
+ * é o JavaScript desta página. Um navegador ocupado decodificando três vídeos
+ * 1080p60 demora a chegar na mensagem, e o atraso dele entrava na conta como
+ * se fosse rede. Na prática deu alguém no mesmo estado marcando 247ms enquanto
+ * outro em outro país marcava 185.
+ *
+ * As duas medidas abaixo separam as coisas.
+ */
+
+/* Latência de rede de verdade.
+ *
+ * Vem do `candidate-pair` do WebRTC, que é medido pela pilha de rede do
+ * navegador com pacotes STUN — não passa pela thread principal, então não
+ * contamina com o quanto a página está ocupada. E vai até o mesmo servidor,
+ * que é o que interessa.
+ *
+ * Precisa de pelo menos uma transmissão aberta para existir. Sem nenhuma,
+ * devolve 0 e o servidor entende como "não informado". */
+let rttMedido = 0;
+function rttDaRede(){ return rttMedido; }
+
+async function amostraRtt(){
+  let melhor = 0;
+  for (const pc of assistindo.values()) {
+    let stats;
+    try { stats = await pc.getStats(); } catch { continue; }
+    stats.forEach(r => {
+      // `nominated` é o par que está de fato carregando a mídia. Sem esse
+      // filtro entram candidatos descartados, com RTT de sobra.
+      if (r.type === 'candidate-pair' && r.nominated && r.currentRoundTripTime != null) {
+        const ms = Math.round(r.currentRoundTripTime * 1000);
+        if (ms > 0 && (melhor === 0 || ms < melhor)) melhor = ms;
+      }
+    });
+  }
+  rttMedido = melhor;
+}
+setInterval(amostraRtt, 2000);
+
+/* ---------------- vigia de decodificação ----------------
+ *
+ * Sintoma que motivou isto: a transmissão de alguém fica PRETA para uma pessoa
+ * e continua normal para as outras — e volta ao normal quando essa pessoa
+ * alterna entre foco e grade. Alternar move o `<video>` no DOM, o que faz o
+ * navegador refazer a decodificação. Ou seja: o fluxo continua chegando; o que
+ * travou está do lado de quem assiste.
+ *
+ * `travaMs` não pega isso: ele mede atraso da thread principal, não vídeo.
+ *
+ * O que distingue as duas causas possíveis são dois números que o navegador já
+ * tem prontos: se `bytesReceived` sobe e `framesDecoded` não, o decodificador
+ * empacou — tipicamente por ter perdido pedaço de um quadro-chave. Se os dois
+ * sobem e ainda assim está preto, o problema é de pintura, e aí religar o
+ * elemento não resolveria (mas o registro passa a dizer isso, que já é muito
+ * mais do que sabíamos).
+ */
+
+/* Por stream: última leitura e há quantas amostras está empacado. */
+const decodificacao = new Map();
+
+/* Quantas vezes religamos um vídeo, e quantos quadros o navegador descartou.
+ * Vão no pong para a sala registrar — sem isso, o relato continua sendo
+ * "às vezes fica preto". */
+let religacoes = 0;
+let quadrosPerdidos = 0;
+
+/* Amostras seguidas empacadas antes de agir.
+ *
+ * A 1s por amostra, três é o mínimo que não briga com a recuperação natural:
+ * quem transmite força quadro-chave a cada 2s, então uma travada legítima se
+ * resolve sozinha antes disto. Agir mais cedo seria religar o vídeo por algo
+ * que ia passar de qualquer jeito. */
+const AMOSTRAS_PARA_RELIGAR = 3;
+
+async function vigiaQuadros(){
+  for (const [streamId, pc] of assistindo) {
+    let stats;
+    try { stats = await pc.getStats(); } catch { continue; }
+
+    let quadros = null, bytes = null, perdidos = 0;
+    stats.forEach(r => {
+      if (r.type === 'inbound-rtp' && r.kind === 'video') {
+        quadros = r.framesDecoded ?? null;
+        bytes = r.bytesReceived ?? null;
+        perdidos = r.framesDropped ?? 0;
+      }
+    });
+    if (quadros === null || bytes === null) continue;
+
+    const antes = decodificacao.get(streamId);
+    decodificacao.set(streamId, { quadros, bytes, perdidos, parado: 0 });
+    if (!antes) continue;
+
+    quadrosPerdidos += Math.max(0, perdidos - antes.perdidos);
+
+    // Chegando dado e não virando quadro: é o decodificador, não a rede.
+    const empacou = bytes > antes.bytes && quadros === antes.quadros;
+    const atual = decodificacao.get(streamId);
+    atual.parado = empacou ? antes.parado + 1 : 0;
+    if (atual.parado < AMOSTRAS_PARA_RELIGAR) continue;
+
+    const video = document.getElementById('tile-' + streamId)?.querySelector('video');
+    if (!video || !video.srcObject) continue;
+
+    // Religar é o que alternar o foco fazia sem querer: solta e reata a fonte,
+    // e o navegador monta um decodificador novo. Barato, e a alternativa é a
+    // pessoa olhar para o preto até pensar em mexer na interface.
+    const fonte = video.srcObject;
+    video.srcObject = null;
+    video.srcObject = fonte;
+    video.play().catch(() => {});
+    atual.parado = 0;
+    religacoes++;
+    console.warn('vídeo empacou e foi religado:', streamId);
+  }
+}
+setInterval(vigiaQuadros, 1000);
+
+
+/* Atraso da thread principal.
+ *
+ * Um relógio que deveria disparar a cada 250ms; o quanto ele atrasa é o quanto
+ * a página está travada. É a parcela que estava indo parar no "ms" e fazendo
+ * parecer problema de conexão.
+ *
+ * Guarda o PIOR atraso desde a última leitura, não o instantâneo: a travada
+ * que importa é justamente a que acontece entre duas amostras. */
+const RITMO_RELOGIO = 250;
+let piorAtraso = 0, ultimoTique = performance.now();
+setInterval(() => {
+  const agora = performance.now();
+  const atraso = Math.max(0, Math.round(agora - ultimoTique - RITMO_RELOGIO));
+  ultimoTique = agora;
+  if (atraso > piorAtraso) piorAtraso = atraso;
+}, RITMO_RELOGIO);
+
+function travaDoNavegador(){
+  const v = piorAtraso;
+  piorAtraso = 0;
+  return v;
+}
+
+function conecta(nick, senha){
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+  // O servidor recusou esta credencial. Reconectar com ela não pode dar certo
+  // nunca — ver `ws.onclose`.
+  let recusado = false;
+
+  ws.onopen = () => ws.send(JSON.stringify({type:'hello', data:{password:senha, nick, convite:CONVITE}}));
+
+  ws.onmessage = ev => {
+    const {type, data} = JSON.parse(ev.data);
+    if (type === 'denied')  {
+      // Credencial guardada que o servidor recusou (senha da sala mudou, por
+      // exemplo) não pode continuar guardada: a pessoa ficaria presa num loop
+      // de erro pré-preenchido sem entender por quê.
+      if (/senha/i.test(data.reason || '')) esqueceCredencial();
+      recusado = true;
+      erroEntrada(data.reason); ws.close(); return;
+    }
+    if (type === 'welcome') {
+      token = data.token; meuId = data.selfId;
+      if (pendente) { guardaCredencial(pendente.nick, pendente.senha); pendente = null; }
+      abreSala(); pinta(data); checaApp(); return;
+    }
+    if (type === 'state')   { pinta(data); return; }
+    if (type === 'convites') { pintaConvites(data.convites); return; }
+    if (type === 'bloqueios') { pintaBloqueios(data.bloqueios); return; }
+    if (type === 'convite_erro') { $('#convite-erro').textContent = data.reason || 'não deu'; return; }
+    if (type === 'ping') {
+      ws.send(JSON.stringify({type:'pong', data:{
+        t: data.t, rttMs: rttDaRede(), travaMs: travaDoNavegador(),
+        religacoes, quadrosPerdidos,
+      }}));
+      return;
+    }
+  };
+
+  ws.onerror = () => erroEntrada('não consegui falar com o servidor');
+  ws.onclose = () => {
+    // Recusa não se resolve tentando de novo, e insistir faz estrago de verdade.
+    //
+    // Antes, um `denied` fechava a conexão e caía aqui; como `token` já estava
+    // preenchido da sessão anterior, agendava-se outra tentativa com a MESMA
+    // senha, a cada 1,5 s, para sempre. Quando a senha da sala mudou, toda aba
+    // aberta virou um laço de tentativas erradas: cinco em sete segundos, que é
+    // exatamente o limite do anti-força-bruta. A pessoa bloqueava o próprio IP
+    // por quinze minutos e se re-bloqueava sozinha — e aí nem a senha NOVA
+    // entrava. Foi assim que a troca de senha trancou quem era de casa.
+    //
+    // O motivo da recusa já está na tela; repetir aqui só o apagaria.
+    if (recusado) return;
+    if (!token) return erroEntrada('conexão recusada');
+    // Reconecta sozinho: o serviço guarda tudo em memória e uma reinicialização
+    // derruba todo mundo. Ninguém deveria ter que apertar F5 por isso.
+    setTimeout(() => conecta(nick, senha), 1500);
+  };
+}
+
+$('#btn-sair').addEventListener('click', () => location.reload());
+
+/* ---------------- convites ----------------
+ *
+ * O painel so aparece para o admin, e o botao de baixar app some para o
+ * convidado. As duas coisas sao ESPELHO do que o servidor ja impoe: ele recusa
+ * criar convite de quem nao e admin e devolve 401 no download do convidado.
+ * Se um dia divergirem, quem vale e o servidor.
+ */
+function aplicaPapel(){
+  $('#btn-convidar').hidden = meuPapel !== 'admin';
+  const baixar = $('#btn-baixar-topo');
+  if (baixar) baixar.hidden = meuPapel === 'convidado';
+  const link = $('#link-baixar');
+  if (link) link.hidden = meuPapel === 'convidado';
+}
+
+function pedeConvites(){
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({type:'convites_listar', data:{}}));
+}
+
+$('#btn-convidar').addEventListener('click', () => {
+  $('#convites').hidden = false;
+  $('#convite-erro').textContent = '';
+  pedeConvites();
+  pedeBloqueios();
+});
+
+function pedeBloqueios(){
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({type:'bloqueios_listar', data:{}}));
+}
+
+function pintaBloqueios(lista){
+  const alvo = $('#bloqueios-lista');
+  if (!alvo) return;
+  if (!lista || !lista.length) {
+    alvo.replaceChildren(Object.assign(document.createElement('p'), {
+      className: 'convites__nota',
+      textContent: 'Ninguem bloqueado.',
+    }));
+    return;
+  }
+  alvo.replaceChildren(...lista.map(b => {
+    const el = document.createElement('div');
+    el.className = 'convite';
+
+    const quem = document.createElement('div');
+    quem.className = 'convite__rotulo';
+    // O apelido e o IP vem do cliente: `textContent`, nunca `innerHTML`.
+    quem.textContent = b.nick || '(sem apelido)';
+    const ip = document.createElement('div');
+    ip.className = 'bloqueio__ip';
+    ip.textContent = b.ip;
+    quem.append(ip);
+
+    const falta = document.createElement('span');
+    falta.className = 'tag';
+    falta.textContent = faltando(b.faltaSeg);
+
+    const falhas = document.createElement('span');
+    falhas.className = 'tag';
+    falhas.textContent = b.falhas + ' erros';
+
+    const liberar = document.createElement('button');
+    liberar.className = 'btn--ghost';
+    liberar.textContent = 'Desbloquear';
+    liberar.addEventListener('click', () => {
+      ws.send(JSON.stringify({type:'bloqueio_remover', data:{ip:b.ip}}));
+    });
+
+    el.append(quem, falta, falhas, liberar);
+    return el;
+  }));
+}
+$('#btn-fechar-convites').addEventListener('click', () => { $('#convites').hidden = true; });
+
+$('#form-convite').addEventListener('submit', e => {
+  e.preventDefault();
+  const rotulo = $('#in-rotulo').value.trim();
+  if (!rotulo) return;
+  $('#convite-erro').textContent = '';
+  ws.send(JSON.stringify({type:'convite_criar', data:{rotulo, prazo:$('#in-prazo').value}}));
+  $('#in-rotulo').value = '';
+});
+
+/* Quanto tempo ainda vale, em texto curto. */
+function faltando(segundos){
+  if (segundos <= 0) return 'vencido';
+  const h = Math.floor(segundos / 3600);
+  const m = Math.floor((segundos % 3600) / 60);
+  return h > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${m}min`;
+}
+
+function pintaConvites(lista){
+  const alvo = $('#convites-lista');
+  if (!alvo) return;
+  if (!lista || !lista.length) {
+    alvo.replaceChildren(Object.assign(document.createElement('p'), {
+      className: 'convites__nota',
+      textContent: 'Nenhum convite ativo.',
+    }));
+    return;
+  }
+  alvo.replaceChildren(...lista.map(c => {
+    const el = document.createElement('div');
+    el.className = 'convite';
+
+    const rotulo = document.createElement('div');
+    rotulo.className = 'convite__rotulo';
+    // textContent: o rotulo e texto livre de quem cria.
+    rotulo.textContent = c.rotulo;
+    const link = document.createElement('div');
+    link.className = 'convite__link';
+    link.textContent = c.link;
+    rotulo.append(link);
+
+    const prazo = document.createElement('span');
+    prazo.className = 'tag';
+    prazo.textContent = faltando(c.expiraEm);
+
+    const uso = document.createElement('span');
+    uso.className = 'tag';
+    uso.textContent = c.emUso + ' na sala';
+
+    const copiar = document.createElement('button');
+    copiar.className = 'btn--ghost';
+    copiar.textContent = 'Copiar';
+    copiar.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(c.link); copiar.textContent = 'Copiado'; }
+      catch { copiar.textContent = 'Copie à mão'; }
+      setTimeout(() => { copiar.textContent = 'Copiar'; }, 2000);
+    });
+
+    const revogar = document.createElement('button');
+    revogar.className = 'btn--ghost';
+    revogar.textContent = 'Revogar';
+    revogar.addEventListener('click', () => {
+      ws.send(JSON.stringify({type:'convite_revogar', data:{codigo:c.codigo}}));
+    });
+
+    el.append(rotulo, prazo, uso, copiar, revogar);
+    return el;
+  }));
+}
+
+/* ---------------- render ---------------- */
+
+/* Qual número mostrar para uma pessoa, e o que ele significa.
+ *
+ * Prefere sempre o `rttMs`, que é latência de rede medida pelo navegador na
+ * camada ICE. O `pingMs` é ida e volta pelo WebSocket com o atraso do
+ * JavaScript embutido — serve só como último recurso, porque nem sempre existe
+ * uma transmissão aberta de onde tirar o RTT.
+ *
+ * A distinção não é preciosismo: com o número antigo, alguém no mesmo estado
+ * aparecia com 247ms e alguém em outro país com 185, e a conclusão natural
+ * ("a internet do Leo está ruim") era falsa. */
+function latencia(p){
+  if (!p) return { ms: null, detalhe: '', travando: false };
+  const travando = p.travaMs > 120;
+  if (p.rttMs > 0) {
+    return {
+      ms: p.rttMs,
+      detalhe: `latência de rede: ${p.rttMs}ms`
+        + (p.travaMs ? `\nnavegador atrasando: ${p.travaMs}ms` : '')
+        + `\nida e volta pelo WebSocket: ${p.pingMs}ms`,
+      travando,
+    };
+  }
+  if (p.pingMs > 0) {
+    return {
+      ms: p.pingMs,
+      detalhe: 'ida e volta pelo WebSocket — inclui o quanto o navegador está'
+        + ' ocupado.\nA latência de rede pura só aparece com alguma'
+        + ' transmissão no ar.',
+      travando,
+    };
+  }
+  return { ms: null, detalhe: '', travando: false };
+}
+
+function pinta(estado){
+  ultimoEstado = estado;
+  // O protocolo manda só `ownerId` no stream; o apelido vive na lista de
+  // participantes. Resolver aqui evita duplicar o nome no servidor e mantém
+  // uma fonte de verdade só.
+  const nicks = new Map(estado.participants.map(p => [p.id, p.nick]));
+  // A versão do app vem na lista de participantes, pela mesma razão do
+  // apelido: é propriedade da pessoa, não da transmissão.
+  const versoes = new Map(estado.participants.map(p => [p.id, p.versao || '']));
+  estado.streams.forEach(s => {
+    s.ownerNick = s.ownerNick || nicks.get(s.ownerId);
+    s.ownerVersao = versoes.get(s.ownerId) || '';
+  });
+
+  const eu = estado.participants.find(p => p.id === meuId);
+  if (eu && eu.papel !== meuPapel) { meuPapel = eu.papel; aplicaPapel(); }
+  const meu = latencia(eu);
+  $('#tag-ping').textContent = meu.ms == null ? '— ms' : `${meu.ms} ms`;
+  $('#tag-ping').className = 'tag' + (meu.ms > 150 ? ' tag--warn' : '');
+  $('#tag-ping').title = meu.detalhe;
+  $('#tag-total').textContent = estado.participants.length;
+
+  lista.replaceChildren(...estado.participants.map(p => {
+    const el = document.createElement('div');
+    el.className = 'pessoa'
+      + (p.sharing ? ' transmitindo' : (p.watching && p.watching.length ? ' assistindo' : ''))
+      + (p.id === meuId ? ' eu' : '');
+    const ponto = document.createElement('span'); ponto.className = 'ponto';
+    const nome = document.createElement('span'); nome.className = 'nome'; nome.textContent = p.nick;
+    // Acima de 150 ms o chip fica laranja: quem está com a conexão ruim
+    // precisa saltar da lista, senão ninguém entende por que a tela dele
+    // está travando.
+    const lat = latencia(p);
+    const ping = document.createElement('span');
+    ping.className = 'tag' + (lat.ms > 150 ? ' tag--warn' : '');
+    ping.textContent = lat.ms == null ? '—' : `${lat.ms}ms`;
+    ping.title = lat.detalhe;
+    el.append(ponto, nome, ping);
+    // Travando o navegador é problema DELE, não da conexão, e merece marca
+    // própria — senão volta a ser lido como "internet ruim", que foi o
+    // engano que essa separação existe para desfazer.
+    if (lat.travando) {
+      const t = document.createElement('span');
+      t.className = 'tag tag--warn';
+      t.textContent = 'travando';
+      t.title = `o navegador está atrasando até ${p.travaMs}ms — não é a conexão`;
+      el.append(t);
+    }
+    // Quem é de fora fica marcado. Sem isto, daqui a duas horas ninguém lembra
+    // quem entrou por convite e quem é de casa.
+    if (p.papel === 'convidado') {
+      const c = document.createElement('span');
+      c.className = 'tag tag--convidado';
+      c.textContent = 'convidado';
+      c.title = 'entrou por um link temporário e só pode assistir';
+      el.append(c);
+    }
+    return el;
+  }));
+
+  sincronizaStreams(estado.streams);
+}
+
+function sincronizaStreams(streams){
+  const vivos = new Set(streams.map(s => s.id));
+
+  for (const [id, pc] of assistindo) {
+    if (!vivos.has(id)) {
+      try { pc.close(); } catch {}
+      assistindo.delete(id);
+      document.getElementById('tile-' + id)?.remove();
+      if (focado === id) focado = null;
+      ocultos.delete(id);
+    }
+  }
+
+  for (const s of streams) {
+    if (!document.getElementById('tile-' + s.id)) criaTile(s);
+    atualizaRodape(s);
+    // Ocultar esconde só a imagem. O <video> continua tocando, então o som
+    // segue — é o caso de quem quer ouvir o jogo enquanto olha outra tela.
+    const tile = document.getElementById('tile-' + s.id);
+    tile.style.display = ocultos.has(s.id) ? 'none' : '';
+  }
+
+  desenhaOcultas(streams);
+  vazio.style.display = streams.length ? 'none' : 'block';
+  // Duas vezes de propósito. A chamada direta cobre o caso de a aba estar em
+  // segundo plano, onde `requestAnimationFrame` não dispara; o rAF corrige a
+  // medida depois de o navegador ter feito o layout do que acabou de mudar.
+  arrumaGrade();
+  requestAnimationFrame(arrumaGrade);
+}
+
+function desenhaOcultas(streams){
+  const faixa = document.getElementById('ocultas');
+  faixa.replaceChildren(...streams.filter(s => ocultos.has(s.id)).map(s => {
+    const chip = document.createElement('div');
+    chip.className = 'oculta';
+
+    const quem = document.createElement('strong');
+    quem.textContent = s.ownerNick || s.ownerId.slice(0,6);
+
+    const nota = document.createElement('span');
+    nota.textContent = 'oculta · som continua';
+
+    const botao = document.createElement('button');
+    botao.className = 'ico';
+    botao.textContent = 'mostrar';
+    botao.addEventListener('click', () => { ocultos.delete(s.id); redesenha(); });
+
+    chip.append(quem, nota, botao);
+    return chip;
+  }));
+}
+
+/* Redesenha com o último estado conhecido. Sem isto, ocultar ou mostrar só
+   teria efeito quando o próximo `state` chegasse do servidor — o clique
+   pareceria não funcionar por até alguns segundos. */
+function redesenha(){
+  if (ultimoEstado) pinta(ultimoEstado);
+}
+
+/* Volume lembrado por pessoa, não por transmissão: o streamId muda a cada vez
+   que alguém recomeça, e ninguém quer reajustar o volume do mesmo amigo toda
+   hora. */
+const chaveVol = s => 'tela.vol.' + (s.ownerNick || s.ownerId);
+function volSalvo(s){
+  const v = parseFloat(localStorage.getItem(chaveVol(s)));
+  return Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+}
+
+/* Brilho por transmissão, também lembrado por pessoa.
+ *
+ * Existe por causa do HDR de quem transmite. Com HDR ligado o Windows compõe
+ * conteúdo SDR num nível de branco próprio — medido, 240 nits contra os 80 da
+ * referência —, e a captura em 8 bits entrega uma imagem que não bate com o
+ * que o dono da tela vê. Medimos também que NADA estoura no processo (0,0% dos
+ * pixels no teto), então a informação está toda ali, só deslocada: um ajuste
+ * de brilho recupera por inteiro, sem inventar detalhe que se perdeu.
+ *
+ * Fica do lado de QUEM ASSISTE, e não de quem transmite, por dois motivos. O
+ * fator certo depende também do monitor de quem olha, que nós não conhecemos;
+ * e corrigir na origem com um fator errado estragaria a imagem para todo mundo
+ * de uma vez, enquanto aqui cada um ajusta o que vê e ninguém mais é afetado.
+ */
+const chaveBrilho = s => 'tela.brilho.' + (s.ownerNick || s.ownerId);
+function brilhoSalvo(s){
+  const v = parseFloat(localStorage.getItem(chaveBrilho(s)));
+  return Number.isFinite(v) ? Math.min(1.6, Math.max(0.4, v)) : 1;
+}
+/* Um pouco de contraste junto com a redução de brilho.
+ *
+ * Só escurecer deixa a imagem cinzenta: o preto sobe junto com o resto e a
+ * imagem perde profundidade em vez de ganhar. Devolver contraste na proporção
+ * do que foi tirado mantém o preto no lugar. Acima de 1 não mexe. */
+function filtroBrilho(v){
+  if (Math.abs(v - 1) < .01) return '';
+  const contraste = v < 1 ? 1 + (1 - v) * 0.5 : 1;
+  return `brightness(${v.toFixed(2)}) contrast(${contraste.toFixed(2)})`;
+}
+
+function criaTile(s){
+  const tile = document.createElement('div');
+  tile.className = 'tile'; tile.id = 'tile-' + s.id;
+
+  const v = document.createElement('video');
+  v.autoplay = true; v.playsInline = true;
+  v.volume = volSalvo(s);
+  v.addEventListener('click', () => {
+    // Em tela cheia, tocar no video e para mostrar ou esconder os controles —
+    // ver `controlesDaCheia`. Trocar entre foco e grade ali atras, sem ninguem
+    // estar vendo, so bagunçaria a sala para quando se saisse.
+    if (elementoCheio()) return;
+    focado = (focado === s.id) ? null : s.id;
+    layout(focado ? 'foco' : 'grade');
+  });
+  // Clique duplo é o gesto que todo player de vídeo tem; quem chega aqui já
+  // espera que funcione.
+  v.addEventListener('dblclick', e => { e.preventDefault(); alterna_cheia(v); });
+
+  const rodape = document.createElement('div');
+  rodape.className = 'rodape'; rodape.id = 'rod-' + s.id;
+
+  // Uma faixa só, embaixo do vídeo: nome e fonte à esquerda, controles e
+  // estado à direita. `arrumaGrade` mede a altura dela e desconta do card,
+  // então o vídeo continua 16:9 inteiro e nada transborda.
+  const abaixo = document.createElement('div');
+  abaixo.className = 'abaixo';
+  abaixo.append(rodape, controles(s, v));
+  tile.append(v, abaixo);
+  grade.append(tile);
+
+  if (!DEMO) assiste(s.id, v);
+}
+
+/* Controles de uma transmissão: volume, mudo e ocultar. Ficam num elemento
+   próprio porque o rodapé é reconstruído a cada `state` — se morassem juntos,
+   o slider pularia de volta sozinho enquanto a pessoa arrasta. */
+function controles(s, video){
+  const box = document.createElement('div');
+  box.className = 'controles';
+
+  const mudo = document.createElement('button');
+  mudo.className = 'ico';
+  const pintaMudo = () => {
+    mudo.textContent = video.muted ? 'mudo' : 'som';
+    mudo.classList.toggle('mudo', video.muted);
+    faixa.disabled = video.muted;
+  };
+  mudo.addEventListener('click', () => { video.muted = !video.muted; pintaMudo(); });
+
+  const faixa = document.createElement('input');
+  faixa.className = 'vol';
+  faixa.type = 'range'; faixa.min = 0; faixa.max = 1; faixa.step = .02;
+  faixa.value = video.volume;
+  faixa.title = 'volume';
+  faixa.addEventListener('input', () => {
+    video.volume = parseFloat(faixa.value);
+    if (video.volume > 0 && video.muted) { video.muted = false; pintaMudo(); }
+    localStorage.setItem(chaveVol(s), faixa.value);
+  });
+
+  // Brilho: só aparece depois de clicar em "brilho", porque a maioria das
+  // transmissões não precisa e um segundo slider sempre visível deixaria a
+  // faixa apertada demais nos cards menores.
+  const brilho = document.createElement('input');
+  brilho.type = 'range'; brilho.min = 0.4; brilho.max = 1.6; brilho.step = .02;
+  brilho.value = brilhoSalvo(s);
+  brilho.title = 'brilho da imagem (só para você)';
+  brilho.hidden = true;
+  const aplicaBrilho = () => {
+    video.style.filter = filtroBrilho(parseFloat(brilho.value));
+  };
+  brilho.addEventListener('input', () => {
+    aplicaBrilho();
+    localStorage.setItem(chaveBrilho(s), brilho.value);
+  });
+  // Clique duplo no slider volta ao normal: mais rápido que mirar o meio.
+  brilho.addEventListener('dblclick', () => {
+    brilho.value = 1; aplicaBrilho();
+    localStorage.removeItem(chaveBrilho(s));
+  });
+  aplicaBrilho();
+
+  const luz = document.createElement('button');
+  luz.className = 'ico';
+  luz.textContent = 'brilho';
+  luz.title = 'ajusta o brilho só na sua tela — útil quando quem transmite está com HDR ligado';
+  luz.addEventListener('click', () => {
+    brilho.hidden = !brilho.hidden;
+    luz.classList.toggle('mudo', !brilho.hidden);
+  });
+
+  const cheia = document.createElement('button');
+  cheia.className = 'ico ico--cheia';
+  cheia.textContent = 'tela cheia';
+  cheia.title = 'tela cheia (ou clique duplo no vídeo)';
+  cheia.addEventListener('click', () => alterna_cheia(video));
+
+  const ocultar = document.createElement('button');
+  ocultar.className = 'ico';
+  ocultar.textContent = 'ocultar';
+  ocultar.title = 'esconde a imagem — o som continua';
+  ocultar.addEventListener('click', () => {
+    ocultos.add(s.id);
+    // Se a tela oculta era a que estava em foco, o palco ficaria vazio com o
+    // modo foco ligado e nada visível. Volta para a grade.
+    if (focado === s.id) { focado = null; layout('grade'); }
+    redesenha();
+  });
+
+  pintaMudo();
+  box.append(mudo, faixa, luz, brilho, document.createElement('span'), cheia, ocultar);
+  box.querySelector('span').className = 'sep';
+  return box;
+}
+
+function atualizaRodape(s){
+  const rod = document.getElementById('rod-' + s.id);
+  if (!rod) return;
+  const st = s.stats || {};
+  rod.replaceChildren();
+
+  const quem = document.createElement('span');
+  quem.className = 'quem'; quem.textContent = s.ownerNick || s.ownerId.slice(0,6);
+
+  const fonte = document.createElement('span');
+  fonte.className = 'fonte';
+  fonte.textContent = s.sourceTitle || (s.sourceType === 'monitor' ? 'monitor inteiro' : 'janela');
+
+  // A versão do app de quem transmite, ao lado do nome do monitor.
+  //
+  // Numa noite de correções seguidas ninguém sabia quem já tinha atualizado, e
+  // sintomas de versões diferentes eram comparados como se fossem a mesma. Fica
+  // aqui e não na lista de participantes porque a pergunta aparece justamente
+  // ao olhar a transmissão de alguém: "isso aí é a versão nova?".
+  //
+  // `textContent` e não `innerHTML`: o valor vem do cliente. O servidor já o
+  // saneia, e mesmo assim não é motivo para montar marcação com ele.
+  if (s.ownerVersao) {
+    const v = document.createElement('span');
+    v.className = 'versao';
+    v.textContent = 'v' + s.ownerVersao;
+    v.title = "versão do tela' de " + (s.ownerNick || 'quem transmite');
+    fonte.append(' ', v);
+  }
+
+  // Em card estreito os rótulos encolhem em vez de sumir.
+  //
+  // Com a resolução entrando na faixa são cinco tags, e no card de 345px de
+  // uma sala com seis telas elas somavam 406px — o excedente era cortado pelo
+  // `overflow:hidden` do tile, sumindo sem aviso. Esconder informação seria
+  // pior: a resolução MUDA sozinha agora, e é justamente quando há muita gente
+  // transmitindo que ela mais muda.
+  const curto = grade.classList.contains('estreito');
+
+  const ao = document.createElement('span');
+  ao.className = 'tag tag--live'; ao.textContent = 'ao vivo';
+
+  // O espaçador empurra o estado para a direita, de modo que "ao vivo",
+  // taxa e fps fiquem sempre na mesma borda em todos os cards — dá para
+  // comparar as transmissões de relance sem procurar onde cada número está.
+  const sep = document.createElement('span');
+  sep.className = 'sep-rod';
+
+  rod.append(quem, fonte, sep, ao);
+
+  if (st.kbps) {
+    const t = document.createElement('span');
+    t.className = 'tag';
+    t.textContent = curto ? `${(st.kbps/1000).toFixed(1)}M` : `${(st.kbps/1000).toFixed(1)} Mbps`;
+    rod.append(t);
+  }
+  // O fps é o número que denuncia engasgo: a taxa pode continuar alta com a
+  // imagem travando, e aí o que caiu foi isto.
+  if (st.fps) {
+    const t = document.createElement('span');
+    t.className = 'tag'; t.textContent = curto ? `${st.fps}f` : `${st.fps} fps`;
+    rod.append(t);
+  }
+  // A resolução MUDA durante a transmissão: quando a conexão aperta, quem
+  // transmite troca pixels por bits automaticamente. Sem mostrá-la, a imagem
+  // amolece e quem assiste não tem como saber que foi de propósito.
+  if (st.h) {
+    const t = document.createElement('span');
+    t.className = 'tag'; t.textContent = `${st.h}p`;
+    t.title = st.w ? `${st.w}×${st.h}` : '';
+    rod.append(t);
+  }
+  if (st.dropped > 0) {
+    const t = document.createElement('span');
+    t.className = 'tag tag--warn';
+    t.textContent = curto ? `${st.dropped}!` : `${st.dropped} perdidos`;
+    rod.append(t);
+  }
+}
+
+/* Anima a mudança de arranjo pela técnica FLIP: mede onde cada card está,
+ * deixa o layout mudar, e então desfaz a mudança com um `transform` que é
+ * animado de volta para a identidade.
+ *
+ * O motivo de ser assim, e não uma transição de `width`/`height`: animar
+ * largura e altura obriga o navegador a refazer layout a cada quadro, com o
+ * vídeo dentro. `transform` roda só no compositor — não toca no layout e não
+ * interrompe a decodificação. É a diferença entre a animação e a travada.
+ */
+function transicao(muda){
+  const tiles = [...grade.children].filter(t => t.style.display !== 'none');
+  // Zera transformações em voo: senão a medida "antes" já viria deformada e a
+  // animação seguinte partiria do lugar errado.
+  for (const t of tiles) { t.style.transition = 'none'; t.style.transform = ''; }
+  const antes = tiles.map(t => t.getBoundingClientRect());
+
+  muda();
+
+  const animando = [];
+  tiles.forEach((t, i) => {
+    const a = antes[i], d = t.getBoundingClientRect();
+    if (!a.width || !d.width) return;
+    const dx = a.left - d.left, dy = a.top - d.top;
+    const ex = a.width / d.width, ey = a.height / d.height;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1
+        && Math.abs(ex - 1) < .01 && Math.abs(ey - 1) < .01) return;
+    t.style.transformOrigin = 'top left';
+    t.style.transform = `translate(${dx}px, ${dy}px) scale(${ex}, ${ey})`;
+    animando.push(t);
+  });
+  if (!animando.length) return;
+
+  // Leitura forçada de layout: obriga o navegador a assumir AGORA a posição
+  // invertida, para que a atribuição seguinte conte como mudança e dispare a
+  // transição. Sem isto as duas atribuições cairiam no mesmo pacote de estilo
+  // e o card apareceria direto no lugar novo, sem animar.
+  //
+  // Era `requestAnimationFrame` antes, e tinha um defeito pior que não animar:
+  // rAF não roda em aba escondida, então o transform invertido ficava preso e
+  // o card congelava fora do lugar até a aba voltar. Aqui é síncrono.
+  void grade.offsetWidth;
+
+  for (const t of animando) {
+    t.style.transition = 'transform .26s cubic-bezier(.2,.7,.3,1)';
+    t.style.transform = '';
+  }
+}
+
+function layout(modo){
+  transicao(() => {
+    grade.classList.toggle('foco', modo === 'foco');
+    $('#bt-grade').classList.toggle('on', modo !== 'foco');
+    $('#bt-foco').classList.toggle('on', modo === 'foco');
+    document.querySelectorAll('.tile').forEach(t =>
+      t.classList.toggle('ativo', modo === 'foco' && t.id === 'tile-' + focado));
+    // Sem isto o arranjo só era recalculado no próximo `resize`: alternar
+    // grade/foco trocava as classes e deixava os tamanhos antigos no lugar.
+    arrumaGrade();
+  });
+}
+$('#bt-grade').addEventListener('click', () => { focado = null; layout('grade'); });
+$('#bt-foco').addEventListener('click', () => {
+  if (!focado) focado = document.querySelector('.tile')?.id?.replace('tile-','') || null;
+  layout(focado ? 'foco' : 'grade');
+});
+
+/* ---------------- arranjo do palco ---------------- */
+
+/* Escolhe o arranjo que dá a MAIOR área de vídeo somada.
+ *
+ * Duas famílias de arranjo entram na disputa, e ganha a de maior área total:
+ *
+ *   UNIFORME — todos do mesmo tamanho, N colunas. Ótimo para número par.
+ *   BENTO    — uma tela grande de um lado, as outras empilhadas do outro.
+ *
+ * O bento existe por causa do número ímpar. Com três transmissões o uniforme
+ * cai em 2x2 e desperdiça um quadrante inteiro: numa janela de 1720x810 dá
+ * três vídeos de 652x367. O mesmo espaço em bento dá um de 1139x641 e dois de
+ * 569x320 — 52% mais área de vídeo no total, medido, sem sobra.
+ *
+ * O vídeo é 16:9, então a área aproveitada de um card não é a área do card: se
+ * o card for mais alto que a proporção pede, sobra tarja preta. Todas as
+ * contas abaixo limitam pela proporção antes de comparar.
+ */
+
+/* Melhor bento para `n` telas: uma grande à esquerda, `n-1` do outro lado
+ * distribuídas em `k` colunas.
+ *
+ * A busca é numérica (varre a largura da tela pequena) e não analítica de
+ * propósito: com os dois tetos de altura, o ótimo cai numa borda com
+ * frequência, e a fórmula fechada erraria nesses casos justamente onde o
+ * arranjo importa. São algumas centenas de contas, só ao redimensionar.
+ */
+/* Largura mínima das telas pequenas em relação à grande. Segura a soma de
+   áreas, que sozinha degenera (ver dentro de `melhorBento`). */
+const PROPORCAO_MINIMA = 0.45;
+
+function melhorBento(n, larg, alt, gap, info){
+  if (n < 3) return null;
+  const resto = n - 1;
+  let melhor = null;
+
+  for (let k = 1; k <= Math.min(3, resto); k++) {
+    const linhas = Math.ceil(resto / k);
+    const aPeq = (alt - gap * (linhas - 1)) / linhas - info;
+    if (aPeq <= 0) continue;
+    const lPeqTeto = aPeq * 16 / 9;
+    const lGrandeTeto = (alt - info) * 16 / 9;
+
+    for (let i = 1; i <= 240; i++) {
+      const lPeq = lPeqTeto * i / 240;
+      const lGrande = Math.min(lGrandeTeto, larg - gap * k - lPeq * k);
+      // "Grande" tem de ser de fato maior, senão isto é um uniforme torto.
+      if (lGrande <= lPeq) continue;
+      // E as pequenas têm de continuar assistíveis. Sem este piso, a soma das
+      // áreas premia o caso degenerado: uma tela ocupando o palco inteiro e as
+      // outras viradas lasca de 50x28px, que foi o que a primeira versão
+      // produziu. Área total é o critério; isto é o limite de decência dele.
+      if (lPeq < PROPORCAO_MINIMA * lGrande) continue;
+      const area = lGrande * lGrande + resto * lPeq * lPeq;
+      if (!melhor || area > melhor.area) melhor = { k, linhas, lGrande, lPeq, area };
+    }
+  }
+  return melhor;
+}
+
+/* Liga ou desliga o modo de card estreito e REDESENHA a faixa quando muda.
+ *
+ * O redesenho é obrigatório porque os rótulos das tags dependem da classe: em
+ * card estreito eles encolhem ("3.4M" em vez de "3.4 Mbps") para as cinco
+ * tags caberem. Sem redesenhar, elas ficariam com o texto longo até o próximo
+ * `state` do servidor — que é exatamente quando não cabem, e o excedente some
+ * cortado pelo `overflow:hidden` do tile, sem aviso.
+ *
+ * A recursão não acontece: `atualizaRodape` não chama `arrumaGrade`. */
+function marcaEstreito(sim){
+  if (grade.classList.contains('estreito') === sim) return;
+  grade.classList.toggle('estreito', sim);
+  if (ultimoEstado) ultimoEstado.streams.forEach(atualizaRodape);
+}
+
+function arrumaGrade(){
+  if (!grade) return;
+
+  const tiles = [...grade.children].filter(t => t.style.display !== 'none');
+  const n = tiles.length;
+  if (!n) return;
+
+  // Cada arranjo posiciona os cards de um jeito. Limpar antes evita que o
+  // span e a altura de um bento anterior sobrevivam num arranjo uniforme.
+  for (const t of tiles) {
+    t.style.gridRow = ''; t.style.gridColumn = '';
+    t.style.width = ''; t.style.height = '';
+  }
+
+  // Mede a própria grade, não o palco menos o que se imagina que há nele.
+  //
+  // A conta antiga era `palco - padding - faixa de ocultas`, e refazia à mão
+  // um trabalho que o navegador já tinha feito. Bastava um item novo no palco
+  // para as duas versões discordarem — foi o que aconteceu com a faixa de
+  // transmissões ocultas, que a grade não descontava da própria altura e
+  // acabava empurrada para fora do palco por baixo.
+  //
+  // Agora a grade é `flex:1` dentro do palco: o que ela mede é o que ela tem.
+  const larg = grade.clientWidth;
+  const alt = grade.clientHeight;
+  if (larg <= 0 || alt <= 0) return;
+
+  const gap = parseFloat(getComputedStyle(grade).gap) || 12;
+  // A faixa embaixo do vídeo é medida, não chutada: ela muda de altura com o
+  // tamanho da fonte do navegador. O padrão de 32 só vale para o primeiro
+  // cálculo, antes de existir card na tela.
+  const info = tiles[0].querySelector('.abaixo');
+  const alturaInfo = info ? info.offsetHeight || 32 : 32;
+
+  // --- foco: uma grande, o resto empilhado numa coluna à direita ---
+  //
+  // À direita e não embaixo porque as duas dimensões não custam o mesmo. Numa
+  // janela larga a tela principal é limitada pela ALTURA: com o carrossel
+  // embaixo ela ficava em 1143x643 e sobravam 557px de largura sem uso. Tirando
+  // a pilha da vertical e pondo na horizontal, o limite passa a ser a largura —
+  // que é o lado folgado — e a principal vai a 1433x806. 57% mais área.
+  //
+  // As outras continuam VISÍVEIS e tocando, só menores. Antes elas levavam
+  // `display:none`, e era isso que travava ao alternar: esconder um <video>
+  // faz o navegador descartar a camada de vídeo do compositor e remontá-la
+  // inteira na volta. Encolher é barato; destruir e recriar não é.
+  if (grade.classList.contains('foco')) {
+    grade.classList.remove('bento');
+    const ativo = tiles.find(t => t.classList.contains('ativo')) || tiles[0];
+    const outros = tiles.filter(t => t !== ativo);
+
+    let lPeq = 0, hPeq = 0;
+    if (outros.length) {
+      // Entre 160 e 300px de largura: menos não dá para reconhecer a tela,
+      // mais começa a comer a principal.
+      lPeq = Math.min(300, Math.max(160, larg * 0.15));
+      let hCard = lPeq * 9 / 16 + alturaInfo;
+      // Muita gente transmitindo: a pilha tem de caber na altura do palco.
+      const cabe = (alt - gap * (outros.length - 1)) / outros.length;
+      if (hCard > cabe) {
+        hCard = cabe;
+        lPeq = (hCard - alturaInfo) * 16 / 9;
+      }
+      if (lPeq <= 0) return;
+      lPeq = Math.floor(lPeq);
+      hPeq = Math.floor(lPeq * 9 / 16) + alturaInfo;
+    }
+
+    const sobraLarg = larg - (outros.length ? lPeq + gap : 0);
+    const lG = Math.floor(Math.min(sobraLarg, (alt - alturaInfo) * 16 / 9));
+    const hG = Math.floor(lG * 9 / 16) + alturaInfo;
+    if (lG <= 0) return;
+
+    grade.style.gridTemplateColumns = outros.length ? lG + 'px ' + lPeq + 'px' : lG + 'px';
+    // As duas faixas de `1fr` centralizam a pilha na vertical sem deixar a
+    // grade estourar: a principal atravessa todas as linhas e as sobras ficam
+    // nas pontas, em vez de espalhadas entre as miniaturas.
+    grade.style.gridTemplateRows = outros.length
+      ? '1fr repeat(' + outros.length + ', ' + hPeq + 'px) 1fr'
+      : hG + 'px';
+    grade.style.gridAutoRows = '';
+
+    ativo.style.gridRow = '1 / -1';
+    ativo.style.gridColumn = '1';
+    ativo.style.width = lG + 'px';
+    ativo.style.height = hG + 'px';
+    outros.forEach((t, i) => {
+      t.style.gridColumn = '2';
+      t.style.gridRow = String(i + 2);
+      t.style.width = lPeq + 'px';
+      t.style.height = hPeq + 'px';
+    });
+    marcaEstreito(lPeq < 400);
+    return;
+  }
+
+  // --- candidato uniforme ---
+  let uniforme = null;
+  for (let cols = 1; cols <= n; cols++) {
+    const linhas = Math.ceil(n / cols);
+    const lCard = (larg - gap * (cols - 1)) / cols;
+    const aCard = (alt - gap * (linhas - 1)) / linhas - alturaInfo;
+    if (lCard <= 0 || aCard <= 0) continue;
+    const lVideo = Math.min(lCard, aCard * 16 / 9);
+    const area = n * lVideo * lVideo;
+    if (!uniforme || area > uniforme.area) uniforme = { cols, area, lVideo };
+  }
+  if (!uniforme) return;
+
+  const bento = melhorBento(n, larg, alt, gap, alturaInfo);
+  const usaBento = bento && bento.area > uniforme.area * 1.05;
+
+  grade.classList.toggle('bento', !!usaBento);
+
+  if (!usaBento) {
+    // O card recebe o tamanho do vídeo mais a faixa, não o da célula. Com
+    // linhas de 1fr o card ficava com a altura inteira da linha e o
+    // object-fit:contain enchia o resto de preto — 280px de tarja em cada
+    // transmissão, medidos numa janela de 1280x720 com duas telas.
+    const l = Math.floor(uniforme.lVideo);
+    grade.style.gridTemplateRows = '';
+    grade.style.gridTemplateColumns = 'repeat(' + uniforme.cols + ', ' + l + 'px)';
+    grade.style.gridAutoRows = Math.floor(l * 9 / 16) + alturaInfo + 'px';
+    marcaEstreito(l < 400);
+    return;
+  }
+
+  // --- bento ---
+  const lG = Math.floor(bento.lGrande), lP = Math.floor(bento.lPeq);
+  const hG = Math.floor(lG * 9 / 16) + alturaInfo;
+  const hP = Math.floor(lP * 9 / 16) + alturaInfo;
+  // A linha precisa caber a tela grande, que ocupa todas elas. Sem este piso a
+  // grande transbordaria o palco sempre que a pilha do lado fosse mais baixa
+  // que ela — o caso comum com muitas telas pequenas.
+  const hLinha = Math.max(hP, (hG - gap * (bento.linhas - 1)) / bento.linhas);
+
+  grade.style.gridTemplateColumns = lG + 'px repeat(' + bento.k + ', ' + lP + 'px)';
+  grade.style.gridTemplateRows = 'repeat(' + bento.linhas + ', ' + Math.ceil(hLinha) + 'px)';
+  grade.style.gridAutoRows = '';
+
+  tiles[0].style.gridRow = '1 / span ' + bento.linhas;
+  tiles[0].style.gridColumn = '1';
+  tiles[0].style.width = lG + 'px';
+  tiles[0].style.height = hG + 'px';
+  for (const t of tiles.slice(1)) {
+    t.style.width = lP + 'px';
+    t.style.height = hP + 'px';
+  }
+  marcaEstreito(lP < 400);
+}
+addEventListener('resize', arrumaGrade);
+
+/* ---------------- tela cheia ---------------- */
+
+/* Entra em tela cheia com o TILE, não com o <video> cru.
+   Em tela cheia o navegador esconde tudo que está fora do elemento escolhido;
+   com o <video> sozinho, o volume, o mudo e o rodapé sumiriam justamente
+   quando são mais necessários — no meio de um jogo. */
+function alterna_cheia(video){
+  const alvo = video.closest('.tile') || video;
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+    return;
+  }
+  const pedir = alvo.requestFullscreen
+    || alvo.webkitRequestFullscreen   // Safari
+    || alvo.msRequestFullscreen;      // Edge legado
+  if (!pedir) return;
+  // Promise rejeitada acontece quando o gesto do usuário não foi reconhecido.
+  // Não há o que fazer além de não quebrar o resto da página.
+  Promise.resolve(pedir.call(alvo)).catch(() => {});
+}
+
+/* ---------------- controles da tela cheia ----------------
+ *
+ * Aparecem com qualquer atividade e somem sozinhos depois de um tempo parado —
+ * o comportamento de qualquer player de video, igual no computador e no
+ * celular.
+ *
+ * Antes isto era CSS puro (`:hover` e `:focus-within`) e funcionava por acaso
+ * no computador. No celular a barra nunca sumia, porque as duas coisas grudam
+ * no toque: ver o comentario do `.tile:fullscreen.mostrando` no CSS.
+ */
+const OCIOSO_MS = 2500;
+let temporizadorCheia = null;
+let ponteiro = 'mouse';
+
+// Safari antigo so conhece o nome com prefixo.
+function elementoCheio(){
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
+}
+
+function cardCheio(){
+  const el = elementoCheio();
+  return el && el.classList.contains('tile') ? el : null;
+}
+
+function mostraControlesCheia(){
+  const card = cardCheio();
+  if (!card) return;
+  card.classList.add('mostrando');
+  clearTimeout(temporizadorCheia);
+  temporizadorCheia = setTimeout(escondeControlesCheia, OCIOSO_MS);
+}
+
+function escondeControlesCheia(){
+  const card = cardCheio();
+  if (!card) return;
+  // Com o mouse em cima da barra, quem esta mexendo nela nao quer ve-la
+  // sumir. Vale SO para mouse: no toque o `:hover` gruda, e esta checagem
+  // seguraria a barra para sempre — que e o defeito que isto existe para
+  // consertar.
+  if (ponteiro === 'mouse' && card.querySelector('.abaixo:hover')) {
+    temporizadorCheia = setTimeout(escondeControlesCheia, OCIOSO_MS);
+    return;
+  }
+  card.classList.remove('mostrando');
+}
+
+document.addEventListener('pointermove', e => {
+  // Mouse mexendo em qualquer lugar mostra. Dedo arrastando so conta dentro da
+  // barra (o volume, por exemplo): arrastar sobre o video nao e pedido nenhum.
+  if (e.pointerType === 'mouse' || (e.target.closest && e.target.closest('.abaixo'))) {
+    ponteiro = e.pointerType;
+    mostraControlesCheia();
+  }
+});
+
+document.addEventListener('pointerdown', e => {
+  ponteiro = e.pointerType;
+  const card = cardCheio();
+  if (!card) return;
+  // No toque, tocar no video ALTERNA: e o gesto de todo player de celular.
+  // Tocar num controle so mantem a barra viva enquanto se mexe nela.
+  const noControle = e.target.closest && e.target.closest('.abaixo');
+  if (e.pointerType !== 'mouse' && !noControle && card.classList.contains('mostrando')) {
+    clearTimeout(temporizadorCheia);
+    card.classList.remove('mostrando');
+    return;
+  }
+  mostraControlesCheia();
+});
+
+// Mexer no volume ou usar o teclado tambem e atividade.
+document.addEventListener('input', mostraControlesCheia);
+document.addEventListener('keydown', mostraControlesCheia);
+
+// Rótulo do botão acompanha o estado, senão fica dizendo "tela cheia" enquanto
+// já se está nela.
+document.addEventListener('fullscreenchange', () => {
+  const dentro = !!document.fullscreenElement;
+  // Entrou: mostra a barra e deixa o temporizador escondê-la, para a pessoa
+  // ver que ela existe. Saiu: limpa, senao a classe ficaria no card da grade.
+  clearTimeout(temporizadorCheia);
+  if (dentro) mostraControlesCheia();
+  else document.querySelectorAll('.tile.mostrando').forEach(t => t.classList.remove('mostrando'));
+  document.querySelectorAll('.tile .ico').forEach(b => {
+    if (b.textContent === 'tela cheia' || b.textContent === 'sair da tela cheia') {
+      b.textContent = dentro && document.fullscreenElement.contains(b) ? 'sair da tela cheia' : 'tela cheia';
+    }
+  });
+});
+
+/* ---------------- WHEP ---------------- */
+
+/* Assina o WHEP, insistindo até dar certo.
+ *
+ * A sala anuncia o stream assim que quem transmite pede `publish_start`, mas o
+ * MediaMTX só passa a tê-lo quando o primeiro pacote do ffmpeg chega — um ou
+ * dois segundos depois. Nessa janela o WHEP responde "no stream is available".
+ *
+ * A primeira versão desistia na primeira falha, e por isso só funcionava se a
+ * pessoa recarregasse a página depois — inclusive a cada troca de fonte, porque
+ * trocar gera um streamId novo.
+ */
+async function assiste(streamId, video, tentativa = 0){
+  // O stream sumiu (quem transmitia parou) enquanto esperávamos: nada a fazer.
+  if (!document.getElementById('tile-' + streamId)) return;
+
+  const anterior = assistindo.get(streamId);
+  if (anterior) { try { anterior.close(); } catch {} }
+
+  const pc = new RTCPeerConnection();
+  assistindo.set(streamId, pc);
+  pc.addTransceiver('video', {direction:'recvonly'});
+  pc.addTransceiver('audio', {direction:'recvonly'});
+  pc.ontrack = e => {
+    video.srcObject = e.streams[0];
+    // `autoplay` no elemento NÃO basta.
+    //
+    // Ele vale para o momento em que o elemento entra no DOM; aqui a mídia
+    // chega depois, e o Chrome não retoma sozinho. O elemento fica `paused`, e
+    // vídeo pausado não decodifica nada — o resultado é tela preta com a
+    // trilha viva, sem mudo e sem erro em lugar nenhum. Foi assim que passamos
+    // horas procurando defeito em codificador, banda e captura.
+    video.play().catch(() => {
+      // Política de autoplay do navegador: com áudio ele pode recusar. Mudo
+      // ele aceita, e o controle de som do card já existe para religar.
+      video.muted = true;
+      if (typeof pintaMudo === 'function') pintaMudo();
+      video.play().catch(err => console.warn('não consegui tocar o vídeo:', err));
+    });
+  };
+
+  // Se a conexão cair depois de estabelecida (rede oscilou, quem transmitia
+  // reiniciou o encoder), tenta de novo em vez de ficar num quadro congelado.
+  pc.onconnectionstatechange = () => {
+    if ((pc.connectionState === 'failed' || pc.connectionState === 'disconnected')
+        && assistindo.get(streamId) === pc) {
+      setTimeout(() => assiste(streamId, video, 0), 1000);
+    }
+  };
+
+  const reTentar = () => {
+    // Espera crescente até 5 s. Sem teto de tentativas: enquanto o card existir,
+    // é porque a sala ainda diz que alguém está transmitindo.
+    const espera = Math.min(5000, 600 * (tentativa + 1));
+    setTimeout(() => assiste(streamId, video, tentativa + 1), espera);
+  };
+
+  try {
+    await pc.setLocalDescription(await pc.createOffer());
+    const r = await fetch(`/tela/${streamId}/whep?token=${token}`, {
+      method:'POST', headers:{'Content-Type':'application/sdp'}, body:pc.localDescription.sdp
+    });
+    if (!r.ok) {
+      // 404 aqui é o caso normal de "ainda não começou a chegar mídia".
+      try { pc.close(); } catch {}
+      reTentar();
+      return;
+    }
+    await pc.setRemoteDescription({type:'answer', sdp: await r.text()});
+    ws.send(JSON.stringify({type:'watch_start', data:{streamId}}));
+  } catch (e) {
+    try { pc.close(); } catch {}
+    reTentar();
+  }
+}
+
+/* ---------------- modal ---------------- */
+
+const CAMINHO_APP = '/download/tela.exe';
+
+// "Baixar app" e o convite do palco vazio abrem o mesmo modal — é o único
+// caminho para transmitir, e some junto com o botão que ficava no rodapé.
+$('#btn-baixar-topo').addEventListener('click', () => modal.classList.add('on'));
+$('#btn-como-transmitir').addEventListener('click', () => modal.classList.add('on'));
+$('#btn-fechar-modal').addEventListener('click', () => modal.classList.remove('on'));
+modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('on'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.classList.remove('on'); });
+
+// Cache-buster: o token do Caddy não tem permissão de purge, então o link
+// sempre pede a versão nova em vez de confiar no cache da Cloudflare.
+$('#link-baixar').addEventListener('click', e => {
+  if (e.currentTarget.dataset.indisponivel !== undefined) { e.preventDefault(); return; }
+  // O token vai na query porque um <a download> não carrega cabeçalho. O `t`
+  // é cache-buster: o binário troca a cada versão e o token do Caddy não tem
+  // permissão de purge na Cloudflare.
+  e.currentTarget.href = `${CAMINHO_APP}?token=${token}&t=${Date.now()}`;
+});
+
+// O app ainda pode não estar publicado. Perguntar ao servidor é mais honesto
+// que oferecer um download que dá 404 na cara da pessoa.
+//
+// Só roda depois do `welcome`: o download é atrás da mesma senha da sala, então
+// sem token a resposta seria 401 e a página se rotularia errado.
+async function checaApp(){
+  if (DEMO) return;
+  // Convidado nao leva o app; o servidor devolveria 401 e a interface acabaria
+  // dizendo "app em breve", que e falso e confunde.
+  if (meuPapel === 'convidado') return;
+  let existe = false;
+  try {
+    const r = await fetch(`${CAMINHO_APP}?token=${token}`, {method:'HEAD'});
+    existe = r.ok;
+  } catch { existe = false; }
+
+  const topo = $('#btn-baixar-topo'), link = $('#link-baixar');
+  if (existe) {
+    delete topo.dataset.indisponivel;
+    delete link.dataset.indisponivel;
+    return;
+  }
+  topo.dataset.indisponivel = '';
+  topo.textContent = 'App em breve';
+  link.dataset.indisponivel = '';
+  link.textContent = 'Ainda não publicado';
+  $('#nota-app').textContent =
+    'O app de transmissão ainda não foi publicado. Por enquanto dá para assistir aqui, e quem for transmitir usa a ferramenta de linha de comando.';
+}
+
+/* ---------------- demo ---------------- */
+
+function entraDemo(nick){
+  meuId = 'eu'; abreSala();
+  const gente = [
+    // O `joão` é o caso que motivou a separação: WebSocket em 247ms, mas a
+    // rede dele está em 24 — o resto é o navegador travando.
+    {id:'eu',   nick, versao:'0.7.5', pingMs:23, rttMs:19, travaMs:4, sharing:'s1', watching:[]},
+    {id:'a1',   nick:'ana',   versao:'0.7.5', pingMs:31,  rttMs:28, travaMs:3,   sharing:'',   watching:['s1']},
+    // Uma versão atrasada de propósito: é para isto que a etiqueta serve.
+    {id:'a2',   nick:'pedro', versao:'0.7.2', pingMs:48,  rttMs:45, travaMs:2,   sharing:'s2', watching:['s1']},
+    // Sem versão: entrou pelo navegador, que não tem uma.
+    {id:'a3',   nick:'joão',  versao:'',      pingMs:247, rttMs:24, travaMs:220, sharing:'',   watching:[]},
+  ];
+  const streams = [
+    {id:'s1', ownerId:'eu', ownerNick:nick, sourceType:'window',
+     sourceTitle:'ATLÉTICO x BRAGANTINO — ESPN', stats:{kbps:6100, fps:30, dropped:0, w:1920, h:1080}},
+    {id:'s2', ownerId:'a2', ownerNick:'pedro', sourceType:'monitor',
+     sourceTitle:'monitor inteiro', stats:{kbps:3400, fps:30, dropped:12, w:1280, h:720}},
+  ];
+  pinta({participants:gente, streams});
+  // Sem vídeo real: pinta os tiles com uma cor de fundo para dar volume à tela.
+  document.querySelectorAll('.tile video').forEach((v,i) => {
+    v.style.background = i ? '#161620' : '#101018';
+  });
+  setInterval(() => {
+    gente.forEach(p => { p.pingMs = Math.max(12, p.pingMs + (Math.random()*8-4)|0);
+      p.rttMs = Math.max(8, p.rttMs + (Math.random()*6-3)|0); });
+    streams[0].stats.kbps = 5800 + (Math.random()*600|0);
+    pinta({participants:gente, streams});
+  }, 2000);
+}
+
+if (DEMO) {
+  $('#in-senha').removeAttribute('required');
+  $('.gate-sub').textContent = 'Modo demonstração — dados falsos, para revisar o visual.';
+}
+})();
+</script>
+</body>
+</html>

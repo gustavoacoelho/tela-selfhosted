@@ -1,0 +1,71 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>tela' — teste</title>
+<style>
+  body { margin:0; background:#131313; color:#c3c0ff; font:14px Inter,system-ui,sans-serif; }
+  #bar { padding:12px; background:#1c1b1b; display:flex; gap:8px; align-items:center; }
+  input { background:#0f0f0f; border:0; color:#fff; padding:8px; }
+  button { background:#c3c0ff; border:0; color:#1a1a2e; padding:8px 16px; cursor:pointer; }
+  #grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:8px; padding:8px; }
+  video { width:100%; background:#000; }
+  pre { padding:12px; color:#46eaed; font-size:12px; }
+</style>
+<div id="bar">
+  <input id="pw" type="password" placeholder="senha">
+  <input id="nick" placeholder="apelido">
+  <button id="go">entrar</button>
+  <span id="status">desconectado</span>
+</div>
+<div id="grid"></div>
+<pre id="state"></pre>
+<script>
+let ws, token, playing = new Set();
+
+document.getElementById("go").onclick = () => {
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  ws = new WebSocket(`${proto}://${location.host}/ws`);
+
+  ws.onopen = () => ws.send(JSON.stringify({ type: "hello", data: {
+    password: document.getElementById("pw").value,
+    nick: document.getElementById("nick").value,
+  }}));
+
+  ws.onmessage = ev => {
+    const { type, data } = JSON.parse(ev.data);
+    if (type === "denied") { document.getElementById("status").textContent = "negado: " + data.reason; ws.close(); }
+    if (type === "welcome") { token = data.token; document.getElementById("status").textContent = "na sala"; render(data); }
+    if (type === "state") render(data);
+    if (type === "ping") ws.send(JSON.stringify({ type: "pong", data: { t: data.t } }));
+  };
+};
+
+function render(state) {
+  document.getElementById("state").textContent = JSON.stringify(state, null, 2);
+  for (const s of state.streams) {
+    if (playing.has(s.id)) continue;
+    playing.add(s.id);
+    play(s.id);
+    ws.send(JSON.stringify({ type: "watch_start", data: { streamId: s.id } }));
+  }
+}
+
+async function play(streamId) {
+  const v = document.createElement("video");
+  v.autoplay = true; v.playsInline = true; v.controls = true;
+  document.getElementById("grid").appendChild(v);
+
+  const pc = new RTCPeerConnection();
+  pc.addTransceiver("video", { direction: "recvonly" });
+  pc.addTransceiver("audio", { direction: "recvonly" });
+  pc.ontrack = e => { v.srcObject = e.streams[0]; };
+
+  await pc.setLocalDescription(await pc.createOffer());
+  const res = await fetch(`/tela/${streamId}/whep?token=${token}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/sdp" },
+    body: pc.localDescription.sdp,
+  });
+  if (!res.ok) { v.replaceWith(Object.assign(document.createElement("pre"), { textContent: "WHEP " + res.status })); return; }
+  await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });
+}
+</script>

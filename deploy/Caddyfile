@@ -1,0 +1,19 @@
+{$TELA_DOMINIO} {
+	encode gzip
+
+	# A autorização do MediaMTX é interna: nunca deve ser alcançável de fora.
+	handle /internal/* {
+		respond 404
+	}
+
+	# Ingest e playback WebRTC. O MediaMTX serve <path>/whip e <path>/whep, e o
+	# namespace de path é "tela/", então tudo sob /tela/* é dele, sem reescrita.
+	handle /tela/* {
+		reverse_proxy mediamtx:8889
+	}
+
+	# Presença (WebSocket), página da sala, convites e downloads.
+	handle {
+		reverse_proxy sala:8090
+	}
+}

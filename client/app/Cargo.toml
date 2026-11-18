@@ -1,0 +1,55 @@
+[package]
+name = "tela-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "App de transmissão do tela' (Windows)"
+
+# Nome diferente do `tela` do CLI de propósito: dois pacotes do mesmo workspace
+# produzindo o mesmo arquivo colidem no diretório de saída.
+# TODO(empacotamento): renomear para `tela.exe` na etapa de release — é o nome
+# que a sala serve em /download/tela.exe.
+[[bin]]
+name = "tela-app"
+path = "src/main.rs"
+
+[features]
+# Embute o ffmpeg (~140 MB) no executavel. Desligada SEMPRE, inclusive na
+# distribuicao: o app passou a baixar o codificador na primeira execucao e a
+# guardar em %LOCALAPPDATA%	ela. Sem isso, cada atualizacao do app custaria
+# 140 MB de banda a cada amigo por causa de um binario que quase nunca muda.
+# Fica aqui como escapatoria para gerar um .exe realmente autocontido.
+ffmpeg-embutido = []
+# Encodar recebendo a textura da captura, sem readback para a CPU.
+#
+# Ligada por padrão. As funções da libavcodec são resolvidas em tempo de
+# execução (ver `capture/src/libav.rs`), então o executável não tem importação
+# nenhuma dela: abre igual com ou sem as DLLs, e as usa quando o download já
+# tiver acontecido. A promessa de um arquivo só continua de pé.
+encoder-d3d11 = ["tela-capture/encoder-d3d11"]
+default = ["encoder-d3d11"]
+
+[dependencies]
+anyhow.workspace = true
+tela-capture = { path = "../capture" }
+# `tray-icon` põe o ícone na bandeja; `image-png` deixa o `include_image!`
+# aceitar os PNGs de `icons/` em vez de exigir RGBA cru.
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Build do Windows (RtlGetVersion) e DPAPI para a senha salva (segredo.rs). Mesma versão que a
+# `capture` usa: duas cópias da `windows` no grafo viram dois tipos distintos.
+windows = { version = "0.62.2", features = ["Wdk_System_SystemServices", "Win32_System_SystemInformation", "Win32_Security_Cryptography", "Win32_Foundation", "Win32_Graphics_Dxgi", "Win32_Graphics_Dxgi_Common", "Win32_Media_Audio", "Win32_System_Threading"] }
+tokio.workspace = true
+reqwest.workspace = true
+# WebSocket em Rust, e não no WebView: o servidor valida `Origin` contra
+# `tela.example.com` (coder/websocket, OriginPatterns). Um WebSocket aberto
+# pelo WebView2 mandaria `Origin: http://tauri.localhost` e levaria 403.
+# Cliente nativo não manda Origin nenhum — passa direto.
+tokio-tungstenite = { version = "0.28", features = ["native-tls"] }
+futures-util = { version = "0.3", default-features = false, features = ["sink"] }
+tauri-plugin-global-shortcut = "2.3.2"
+tauri-plugin-single-instance = "2.4.3"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }

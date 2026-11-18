@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<title>tela'</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+<!-- ===================== 1. ENTRAR ===================== -->
+<section class="tela on" id="t-entrar">
+  <div class="rolo pad">
+    <h1 class="brand">tela<i>'</i></h1>
+    <p class="sub">
+      Este app só <strong>transmite</strong>. Para assistir, qualquer um abre a
+      sala no navegador — nada para instalar.
+    </p>
+
+    <form id="form-entrar" autocomplete="off">
+      <div class="field">
+        <label for="in-nick">Seu apelido</label>
+        <input id="in-nick" maxlength="24" placeholder="como o pessoal te chama" required>
+      </div>
+      <div class="field">
+        <label for="in-senha">Senha da sala</label>
+        <input id="in-senha" type="password" placeholder="a mesma da sala" required>
+      </div>
+      <label class="caixa">
+        <input type="checkbox" id="in-lembrar">
+        <span>Lembrar a senha neste computador</span>
+      </label>
+      <button class="btn largo" type="submit" id="btn-entrar">Entrar na sala</button>
+      <div class="erro" id="erro-entrar" role="alert"></div>
+    </form>
+  </div>
+
+  <footer class="rodape-nota">
+    <div id="nota-config" class="nota-linha"></div>
+    <div id="nota-log" class="nota-linha" title="clique para copiar"></div>
+    <div id="nota-audio" class="nota-linha"></div>
+    <div id="nota-ffmpeg" class="nota-linha"></div>
+    <div id="nota-versao" class="nota-linha"></div>
+  </footer>
+</section>
+
+<!-- ===================== 2. TRANSMITIR ===================== -->
+<section class="tela" id="t-fonte">
+  <header class="topo">
+    <span class="mark">tela<i>'</i></span>
+    <span class="cresce"></span>
+    <span class="tag" id="tag-pessoas">0 na sala</span>
+    <span class="tag" id="tag-ping">— ms</span>
+    <button class="btn-ghost mini" id="btn-sair">Sair</button>
+  </header>
+
+  <div class="rolo">
+    <div class="secao">
+      <h2 class="titulo-secao">
+        <span>O que transmitir</span>
+        <button class="btn-ghost mini" id="btn-atualizar">Atualizar lista</button>
+      </h2>
+      <div class="abas">
+        <button class="aba on" data-aba="monitor">Monitores</button>
+        <button class="aba" data-aba="janela">Janelas</button>
+      </div>
+      <div class="lista" id="lista-fontes"></div>
+      <p class="dica" id="dica-atalhos"></p>
+    </div>
+
+    <!-- O indicador de áudio é o coração do produto: a pessoa tem que saber,
+         antes de transmitir, exatamente o que vai vazar. Por isso ele é um
+         bloco inteiro, e não uma linha de legenda. -->
+    <div class="secao">
+      <h2 class="titulo-secao"><span>Áudio que vai junto</span></h2>
+      <div class="audio" id="bloco-audio">
+        <div class="audio-alvo" id="audio-alvo">Escolha uma fonte acima</div>
+        <div class="audio-explica" id="audio-explica">
+          Janela envia só o som daquele aplicativo. Monitor envia o som do
+          sistema inteiro.
+        </div>
+        <label class="audio-opcao" id="linha-sem-eco" hidden>
+          <input type="checkbox" id="in-sem-eco" checked>
+          <span id="txt-sem-eco">Não enviar o áudio do Discord</span>
+        </label>
+        <div class="audio-aviso" id="audio-aviso"></div>
+      </div>
+    </div>
+
+    <div class="secao">
+      <h2 class="titulo-secao"><span>Qualidade</span></h2>
+      <div class="presets" id="presets">
+        <button class="preset" data-preset="auto">
+          <span class="preset-nome">Automática</span>
+          <span class="preset-spec">ajusta sozinha à sua conexão</span>
+        </button>
+        <button class="preset" data-preset="leve">
+          <span class="preset-nome">Leve</span>
+          <span class="preset-spec">720p · 30 · até 4 Mbps</span>
+        </button>
+        <button class="preset" data-preset="qualidade">
+          <span class="preset-nome">Qualidade</span>
+          <span class="preset-spec">1080p · 60 · até 8 Mbps</span>
+        </button>
+        <button class="preset" data-preset="nativa" id="preset-nativa" hidden>
+          <span class="preset-nome">Nativa</span>
+          <span class="preset-spec">resolução da fonte · até 12 Mbps</span>
+        </button>
+      </div>
+
+    </div>
+
+    <div class="erro" id="erro-fonte" role="alert"></div>
+  </div>
+
+  <footer class="barra">
+    <button class="btn-ghost" id="btn-voltar-ar" hidden>Continuar como está</button>
+    <button class="btn largo" id="btn-transmitir" disabled>Transmitir</button>
+  </footer>
+</section>
+
+<!-- ===================== 3. EM TRANSMISSÃO ===================== -->
+<section class="tela" id="t-ar">
+  <header class="topo">
+    <span class="mark">tela<i>'</i></span>
+    <span class="cresce"></span>
+    <span class="tag tag--live" id="tag-ar">no ar</span>
+    <span class="tag" id="tag-ping-ar">— ms</span>
+  </header>
+
+  <div class="rolo pad">
+    <div class="ar-fonte">
+      <div class="rot">Transmitindo</div>
+      <div class="ar-titulo" id="ar-titulo">—</div>
+      <div class="ar-audio" id="ar-audio">—</div>
+      <div class="aviso-cpu" id="aviso-cpu" hidden></div>
+    </div>
+
+    <div class="metricas">
+      <div class="metrica"><span class="rot">Envio</span><b id="m-kbps">—</b><span class="uni">kbps</span></div>
+      <div class="metrica"><span class="rot">Quadros</span><b id="m-fps">—</b><span class="uni">fps</span></div>
+      <div class="metrica"><span class="rot">Perdidos</span><b id="m-drop">—</b><span class="uni">frames</span></div>
+      <div class="metrica"><span class="rot">Ping</span><b id="m-ping">—</b><span class="uni">ms</span></div>
+      <div class="metrica"><span class="rot">No ar há</span><b id="m-tempo">0:00</b><span class="uni">min:seg</span></div>
+      <div class="metrica"><span class="rot">Saída</span><b id="m-res">—</b><span class="uni" id="m-encoder">—</span></div>
+    </div>
+
+    <div class="ar-estado" id="ar-estado">negociando…</div>
+    <div class="ar-perda" id="ar-perda"></div>
+
+    <p class="sub pequena">
+      Quem assiste abre a sala no navegador. Você também pode — dá para
+      transmitir e assistir ao mesmo tempo.
+    </p>
+    <button class="btn-ghost largo" id="btn-abrir-sala">Abrir a sala no navegador</button>
+  </div>
+
+  <footer class="barra barra--ar">
+    <button class="btn-ghost" id="btn-trocar">Trocar fonte ou qualidade</button>
+    <button class="btn btn--parar" id="btn-parar">Parar transmissão</button>
+  </footer>
+</section>
+
+
+
+<!-- Popup de atualização. Sobreposto de propósito: no fluxo da página ele
+     empurrava o conteúdo e criava rolagem numa tela que cabia inteira. -->
+<div class="modal" id="modal-att">
+  <div class="modal-caixa">
+    <h3 id="att-titulo">Versão nova disponível</h3>
+    <p id="att-texto"></p>
+    <div class="progresso" id="att-barra" hidden><i id="barra-att"></i></div>
+    <p class="nota" id="att-erro"></p>
+    <div class="modal-acoes" id="att-acoes">
+      <button class="btn" id="btn-baixar-versao">Atualizar agora</button>
+      <button class="btn-ghost" id="btn-att-depois">Depois</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>

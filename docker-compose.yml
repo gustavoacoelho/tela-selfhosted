@@ -1,0 +1,47 @@
+# tela' — sala (Go) + MediaMTX (WebRTC) + Caddy (HTTPS automático).
+# Antes de subir: copie .env.example para .env e troque o IP em deploy/mediamtx.yml.
+services:
+  sala:
+    build: ./sala
+    restart: unless-stopped
+    environment:
+      TELA_PASSWORD: ${TELA_PASSWORD:?defina TELA_PASSWORD no .env}
+      TELA_PUBLIC_BASE: https://${TELA_DOMINIO:?defina TELA_DOMINIO no .env}
+      TELA_ORIGINS: ${TELA_DOMINIO}
+      TELA_ADDR: ":8090"
+      # Senha do administrador. Vazia desliga os convites por completo:
+      # variável esquecida tem de desligar o recurso, nunca liberar convidado.
+      TELA_ADMIN_PASSWORD: ${TELA_ADMIN_PASSWORD:-}
+      TELA_CONVITES: /app/dados/convites.json
+    volumes:
+      # O app Windows que a sala oferece em /download (coloque aqui o build).
+      - ./download:/app/download:ro
+      - logs:/app/logs
+      - dados:/app/dados
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    restart: unless-stopped
+    volumes:
+      - ./deploy/mediamtx.yml:/mediamtx.yml:ro
+    ports:
+      - "8189:8189/udp"      # WebRTC: esta porta UDP precisa estar aberta no firewall
+    depends_on: [sala]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      TELA_DOMINIO: ${TELA_DOMINIO}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    depends_on: [sala, mediamtx]
+
+volumes:
+  logs:
+  dados:
+  caddy:
